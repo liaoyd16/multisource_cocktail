@@ -6,11 +6,10 @@ import random
 random.seed(7)
 
 import os
+from utils.dir_utils import list_json_in_dir
+from utils.dataset_meta import ENTRIES_PER_JSON, CLASSES
 
-
-ENTRIES_PER_JSON = 100
-CLASSES = 10
-SAMPLES_PER_JSON = 1000
+SAMPLES_PER_JSON = ENTRIES_PER_JSON * CLASSES
 
 
 class Spec_Label_Dataset(Dataset):
@@ -19,13 +18,14 @@ class Spec_Label_Dataset(Dataset):
         
         self.curr_json_index = -1
         self.block_dir = block_dir
-        self.cleanfolder = os.listdir(clean_dir)
-        self.cleanfolder.sort()
+        # self.cleanfolder = os.listdir(block_dir)
+        # self.cleanfolder.sort()
+        self.cleanfolder = list_json_in_dir(block_dir)
         self.spec = None
         self.labels = None
 
     def __len__(self):
-        return SAMPLES_PER_JSON * len()
+        return SAMPLES_PER_JSON * len(self.cleanfolder)
 
     def __getitem__(self, index):
 

@@ -3,16 +3,18 @@ import os
 
 def list_json_in_dir(dir):
     temp = os.listdir(dir)
-    temp.sort()
-    i = 0
+    ans = []
     for t in temp:
-        if '.json' in t:
-            i += 1
-        else:
-            del temp[i]
-    return temp
+        if '.json' == t[-5:]:
+            ans.append(t)
+    return ans
 
-ROOT_DIR = '/home/tk/cocktail/'
+from utils.config_local import LOCAL
 
-TRAIN_DIR = root_dir + 'cleanblock/'
-TEST_DIR  = root_dir + 'clean_test/'
+if LOCAL:
+    ROOT_DIR = "/Users/liaoyuanda/Desktop/multisource_cocktail/"
+else:
+    ROOT_DIR = '/home/tk/multisource_cocktail/'
+
+TRAIN_DIR = os.path.join(ROOT_DIR, 'cleanblock/')
+TEST_DIR  = os.path.join(ROOT_DIR, 'clean_test/')

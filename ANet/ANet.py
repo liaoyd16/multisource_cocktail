@@ -9,11 +9,12 @@ class ANet(nn.Module):
         super(ANet, self).__init__()
 
         self.linear7 = nn.Sequential(
-            nn.Linear(256, 512),
-            nn.ReLU(),
-        )
-        self.linear6 = nn.Sequential(
             nn.Linear(256, 256),
+            nn.ReLU()
+        )
+
+        self.linear6 = nn.Sequential(
+            nn.Linear(256, 128),
             nn.ReLU(),
         )
         self.linear5 = nn.Sequential(
@@ -36,8 +37,8 @@ class ANet(nn.Module):
     def forward(self, x):
         x = x.view(-1, 1, 256)
 
-        a7 = self.linear7(x).view(-1, 512, 1, 1)
-        a6 = self.linear6(x).view(-1, 256, 1, 1)
+        a7 = self.linear7(x).view(-1, 256, 1, 1)
+        a6 = self.linear6(x).view(-1, 128, 1, 1)
         a5 = self.linear5(x).view(-1, 128, 1, 1)
         a4 = self.linear4(x).view(-1, 64, 1, 1)
         a3 = self.linear3(x).view(-1, 32, 1, 1)

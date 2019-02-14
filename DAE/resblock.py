@@ -30,17 +30,23 @@ class ResBlock(nn.Module):
             x1 = F.relu(self.conv1(x))
             x1 =        self.conv2(x1)
             x  = self.sizematch(self.channels_in, self.channels_out, x)
+            # print("resblock finish")
             return F.relu(x + x1)
         elif self.channels_out < self.channels_in:
+            # print("resblock channels_out < channels_in")
             x = F.relu(self.conv1(x))
             x1 =       self.conv2(x)
+            # print("resblock finish")
             return F.relu(x + x1)
         else:
+            # print("resblock channels_out == channels_in")
             x1 = F.relu(self.conv1(x))
             x1 =        self.conv2(x1)
+            # print("resblock finish")
             return F.relu(x + x1)
 
     def sizematch(self, channels_in, channels_out, x):
+        # print("sizematch")
         zeros = torch.zeros( (x.size()[0], channels_out - channels_in, x.shape[2], x.shape[3]), dtype=torch.float )
         return torch.cat((x, zeros), dim=1)
 

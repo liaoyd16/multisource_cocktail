@@ -2,14 +2,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import torch.utils.data as data
-import torch.nn.init as init
-import pytorch_ssim
-
-import torchvision
-import torchvision.transforms as transforms
-from torch.autograd import Variable
 
 import matplotlib.pyplot as plt
 import pickle
@@ -21,11 +13,13 @@ import cv2
 import random
 random.seed(7)
 
+from utils.dir_utils import ROOT_DIR
+
 #=============================================
 #        Hyperparameters
 #=============================================
 
-epoch = 2
+epoch = 5
 lr = 0.005
 mom = 0.9
 bs = 10
@@ -34,23 +28,24 @@ bs = 10
 #        Define Dataloader
 #=============================================
 from Specgram_Dataset import MSourceDataSet
+from utils.dir_utils import TRAIN_DIR
 
-trainset = MSourceDataSet(clean_dir)
+trainset = MSourceDataSet(TRAIN_DIR)
 trainloader = torch.utils.data.DataLoader(dataset = trainset,
                                                 batch_size = bs,
-                                                shuffle = True)
+                                                shuffle = False)
 
 #=============================================
 #        Model
 #=============================================
 from DAE.conv_fc import ResDAE as ResDAE
+from DAE.aux import white
 
 model = ResDAE()
-try:
-    model.load_state_dict(torch.load(root_dir + 'cocktail/autoencoder/DAE.pkl'))
-except:
-    print("model not available")
-print (model)
+# try:
+#     model.load_state_dict(torch.load(ROOT_DIR + 'multisource_cocktail/DAE/DAE.pkl'))
+# except:
+#     print("model not available")
 
 #=============================================
 #        Optimizer
@@ -65,7 +60,6 @@ optimizer = torch.optim.SGD(model.parameters(), lr = lr, momentum = mom)
 #=============================================
 
 loss_record = []
-
 
 #=============================================
 #        Train
@@ -90,24 +84,23 @@ for epo in range(epoch):
 
         print ('[%d, %5d] loss: %.3f' % (epo, i, loss.item()))
 
-        if i % 20 == 0:
+        if i % 5 == 0:
             inn = data[0].view(256, 128).detach().numpy() * 255
-            cv2.imwrite(root_dir + 'cocktail/autoencoder/' + str(epo) + "_" + str(i) + "_clean.png", inn)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(epo) + "_" + str(i) + "_clean.png"), inn)
             
             out = outputs[0].view(256, 128).detach().numpy() * 255
-            cv2.imwrite(root_dir + 'cocktail/autoencoder/' + str(epo) + "_" + str(i) + "_re.png", out)    
-               
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(epo) + "_" + str(i) + "_re.png"), out)    
+
             plt.figure(figsize = (20, 10))
             plt.plot(loss_record)
             plt.xlabel('iterations')
             plt.ylabel('loss')
-            plt.savefig(root_dir + 'cocktail/autoencoder/DAE_loss.png')
+            plt.savefig(os.path.join(ROOT_DIR, 'results/autoencoder/DAE_loss.png'))
             plt.close("all")
             gc.collect()
-
 
 
 #=============================================
 #        Save Model & Loss
 #=============================================
-torch.save(model.state_dict(), root_dir + 'cocktail/autoencoder/DAE.pkl')
+torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl'))

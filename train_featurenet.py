@@ -1,9 +1,9 @@
+import __init__
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import torch.utils.data as data
 
 
 import matplotlib.pyplot as plt
@@ -14,23 +14,24 @@ import numpy as np
 import random
 random.seed(7)
 
+from utils.dir_utils import ROOT_DIR
+
 #=============================================
 #        Hyperparameters
 #=============================================
 
-epoch = 5
+epoch = 10
 lr = 0.001
-mom = 0.8
-bs = 1
-
-train_dir = '/home/tk/cocktail/cleanblock/' 
+mom = 0.9
+bs = 10
 
 
 #=================================================    
 #               Dataloader 
 #=================================================
 from Spec_Label_Dataset import Spec_Label_Dataset as Spec_Label_Dataset
-featureset  = Spec_Label_Dataset(train_dir)
+from utils.dir_utils import TRAIN_DIR
+featureset  = Spec_Label_Dataset(TRAIN_DIR)
 trainloader = torch.utils.data.DataLoader(dataset = featureset,
                                                 batch_size = bs,
                                                 shuffle = False) # must be False for efficiency
@@ -38,7 +39,7 @@ trainloader = torch.utils.data.DataLoader(dataset = featureset,
 #=================================================    
 #               load
 #=================================================
-from featureNet.featureNet import featureNet as featureNet
+from featureNet import featureNet as featureNet
 
 model = featureNet()
 try:
@@ -59,8 +60,8 @@ optimizer = torch.optim.SGD(model.parameters(), lr = lr, momentum = mom)
 #============================================
 #              training
 #============================================
-import feature_net_test
-from feature_net_test import test as test
+import test_featurenet
+from test_featurenet import test as test
 
 loss_record = []
 every_loss = []
@@ -99,21 +100,21 @@ for epo in range(epoch):
     print('test: [%d] accuracy: %.4f' % (epo, accuracy))
 
             
-torch.save(model.state_dict(), '/home/tk/Documents/FeatureNet.pkl')
+torch.save(model.state_dict(), os.path.join(ROOT_DIR, "multisource_cocktail/featureNet/FeatureNet.pkl"))
 
 
 plt.figure(figsize = (20, 10))
 plt.plot(loss_record)
 plt.xlabel('iterations')
 plt.ylabel('loss')
-plt.savefig('loss.png')
+plt.savefig(os.path.join(ROOT_DIR, 'results/featurenet/train_batch_loss.png'))
 plt.show()
 
 plt.figure(figsize = (20, 10))
 plt.plot(epoch_loss)
 plt.xlabel('iterations')
 plt.ylabel('epoch_loss')
-plt.savefig('epoch_loss.png')
+plt.savefig(os.path.join(ROOT_DIR, 'results/featurenet/train_epoch_loss.png'))
 plt.show()
 
 #plt.figure(figsize = (20, 10))

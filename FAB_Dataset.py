@@ -1,10 +1,14 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
 
-from util.dataset_meta import *
+from utils.dataset_meta import *
 from utils.dir_utils import TRAIN_DIR as TRAIN_DIR
 
+import numpy as np
+import json
+import os
 
+from utils.dataset_meta import *
 
 class BlockBasedDataSet(Dataset):
     '''
@@ -51,9 +55,11 @@ class trainDataSet(BlockBasedDataSet):
     def __init__(self, bs, feat_train_blocks, spec_train_blocks):
         print("trainDataSet: feature blocks: ", len(feat_train_blocks))
         super(trainDataSet, self).__init__(TRAIN_DIR, feat_train_blocks, spec_train_blocks, gen_fab_random_mode=True)
+        self.spec_train_blocks = spec_train_blocks
+        self.bs = bs
 
     def __len__(self):
-        return ENTRIES_PER_JSON * RANDOM_SAMPLES_PER_ENTRY * len(spec_train_blocks) // bs
+        return ENTRIES_PER_JSON * RANDOM_SAMPLES_PER_ENTRY * len(self.spec_train_blocks) // self.bs
 
     def __getitem__(self, dummy_index): # index is dummy, cuz doing ordered traverse
         '''
@@ -66,15 +72,15 @@ class trainDataSet(BlockBasedDataSet):
         # to next batch
 
         fab = None
-        if self.curr_fab_index + bs <= self.f_a_b.shape[1]:
-            fab = self.f_a_b[:, self.curr_fab_index : self.curr_fab_index + bs]
-            self.curr_fab_index += bs
+        if self.curr_fab_index + self.bs <= self.f_a_b.shape[1]:
+            fab = self.f_a_b[:, self.curr_fab_index : self.curr_fab_index + self.bs]
+            self.curr_fab_index += self.bs
         else: # load next entry
             self.curr_entry_index += 1
 
             if self.curr_entry_index == ENTRIES_PER_JSON: # load next block
                 new_json_index = -1
-                if self.curr_json_index + 1 < len(spec_train_blocks):
+                if self.curr_json_index + 1 < len(self.spec_train_blocks):
                     new_json_index += 1
                 else:
                     new_json_index = 0
@@ -82,7 +88,7 @@ class trainDataSet(BlockBasedDataSet):
                 if not new_json_index == self.curr_json_index:
                     self.curr_json_index = new_json_index
                     self.spec_block = np.array(
-                            json.load(open(os.path.join(TRAIN_DIR, spec_train_blocks[new_json_index]), "r"))
+                            json.load(open(os.path.join(TRAIN_DIR, self.spec_train_blocks[new_json_index]), "r"))
                     ).transpose(1,0,2,3)
 
                 self.curr_entry_index = 0
@@ -97,13 +103,13 @@ class trainDataSet(BlockBasedDataSet):
                 self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block)
 
             self.curr_fab_index = 0
-            fab = self.f_a_b[:, self.curr_fab_index : self.curr_fab_index + bs]
+            fab = self.f_a_b[:, self.curr_fab_index : self.curr_fab_index + self.bs]
 
-            self.curr_fab_index += bs
+            self.curr_fab_index += self.bs
 
-        f = torch.Tensor(fab[0]).view(bs, 256, 128)
-        a = torch.Tensor(fab[1]).view(bs, 256, 128)
-        b = torch.Tensor(fab[2]).view(bs, 256, 128)
+        f = torch.Tensor(fab[0]).view(self.bs, 256, 128)
+        a = torch.Tensor(fab[1]).view(self.bs, 256, 128)
+        b = torch.Tensor(fab[2]).view(self.bs, 256, 128)
 
         return f, a, b
 
