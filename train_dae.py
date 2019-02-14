@@ -5,7 +5,6 @@ import torch.optim as optim
 from torch.utils.data import Dataset, DataLoader
 import torch.utils.data as data
 import torch.nn.init as init
-import pytorch_ssim
 
 import torchvision
 import torchvision.transforms as transforms
@@ -56,7 +55,6 @@ print (model)
 #        Optimizer
 #=============================================
 
-# import pytorch_ssim
 criterion = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = lr, momentum = mom)
 
