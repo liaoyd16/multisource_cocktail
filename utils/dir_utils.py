@@ -14,7 +14,7 @@ from utils.config_local import LOCAL
 if LOCAL:
     ROOT_DIR = "/Users/liaoyuanda/Desktop/multisource_cocktail/"
 else:
-    ROOT_DIR = '/home/tk/multisource_cocktail/'
+    ROOT_DIR = '/home/tk/Desktop/multisource_cocktail/'
 
 TRAIN_DIR = os.path.join(ROOT_DIR, 'cleanblock/')
 TEST_DIR  = os.path.join(ROOT_DIR, 'clean_test/')
