@@ -13,9 +13,20 @@ class featureNet(nn.Module):
         self.fc2 = nn.Linear(512, 256)
         self.fc3 = nn.Linear(256, 10)
 
+    def feature(self, x):
+        x = x.view(-1, 1 ,256, 128)
+        x = F.relu(self.maxpool(self.conv1(x)))
+        x = F.relu(self.maxpool(self.conv2(x)))
+        x = self.batchnorm(x)
+        x = x.view(-1, 1024)
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+
+        return x
+
         
     def forward(self, x):
-        x = x.view(bs, 1 ,256, 128)
+        x = x.view(-1, 1 ,256, 128)
         x = F.relu(self.maxpool(self.conv1(x)))
         x = F.relu(self.maxpool(self.conv2(x)))
         x = self.batchnorm(x)

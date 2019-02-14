@@ -24,13 +24,13 @@ bs = 10
 #========================================
 
 #========================================
-from Specgram_Dataset import MSourceDataSet
+from Spec_Label_Dataset import Spec_Label_Dataset as Spec_Label_Dataset
 
 #=================================================    
 #           Dataloader 
 #=================================================
-from utils.dir_utils import TEST_DIR as TEST_DIR
-featureset = MSourceDataSet(TEST_DIR)
+from utils.dir_utils import TEST_DIR, TRAIN_DIR, ROOT_DIR
+featureset = Spec_Label_Dataset(TRAIN_DIR)
 testloader = torch.utils.data.DataLoader(dataset = featureset,
                                                 batch_size = bs,
                                                 shuffle = False)
@@ -38,7 +38,7 @@ testloader = torch.utils.data.DataLoader(dataset = featureset,
 #============================================
 #              testing
 #============================================
-from featureNet.featureNet import featureNet as featureNet
+from featureNet import featureNet as featureNet
 
 def test(model):
     criterion = torch.nn.NLLLoss()
@@ -54,6 +54,7 @@ def test(model):
     
     with torch.no_grad():
         for i, data in enumerate(testloader, 0):
+
             inputs, labels = data
             outputs = model(inputs)
             labels = labels.to(dtype=torch.long)
@@ -76,7 +77,7 @@ def test(model):
         plt.plot(loss_record)
         plt.xlabel('iterations')
         plt.ylabel('loss')
-        plt.savefig('loss.png')
+        plt.savefig(os.path.join(ROOT_DIR, 'results/featurenet/test_loss.png'))
         plt.close()
 
     return correct, total
