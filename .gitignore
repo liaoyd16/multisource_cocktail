@@ -4,3 +4,6 @@ featureNet/*.pkl
 utils/config_local.py
 __pycache__/*
 utils/__pycache__/*
+ANet/__pycache__/*
+DAE/__pycache__/*
+featureNet/__pycache__/*
