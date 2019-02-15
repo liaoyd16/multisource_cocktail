@@ -1,3 +1,5 @@
+import __init__
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -27,7 +29,8 @@ from DAE.resblock import ResTranspose as ResTranspose
 #        path
 #=============================================
 
-from dir_utils import list_json_in_dir as list_json_in_dir
+from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR
+from dataset_meta import *
 
 
 '''
@@ -44,11 +47,11 @@ feat_test_block = all_json_in_test_dir[3:]
 '''
 
 # overfitting setting
-all_json_in_train_dir = list_json_in_dir(train_dir)
+all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
 spec_train_blocks = all_json_in_train_dir[:1]
 feat_train_block = all_json_in_train_dir[1:2]
 
-all_json_in_test_dir = list_json_in_dir(test_dir)
+all_json_in_test_dir = list_json_in_dir(TEST_DIR)
 spec_test_blocks = all_json_in_test_dir[:1]
 feat_test_block = all_json_in_test_dir[1:2]
 

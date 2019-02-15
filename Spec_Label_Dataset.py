@@ -35,6 +35,8 @@ class Spec_Label_Dataset(Dataset):
         if not (self.curr_json_index == newest_json_index):
             self.curr_json_index = newest_json_index
 
+            print("load next block: ", self.curr_json_index)
+
             f = open(self.block_dir + '{}'.format(self.cleanfolder[newest_json_index]))
             self.spec = np.array(json.load(f)).transpose(1,0,2,3)
             self.spec = np.concatenate(self.spec, axis=0)

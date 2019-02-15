@@ -55,6 +55,8 @@ def test(model):
     with torch.no_grad():
         for i, data in enumerate(testloader, 0):
 
+            print("testing i = {}".format(i))
+
             inputs, labels = data
             outputs = model(inputs)
             labels = labels.to(dtype=torch.long)

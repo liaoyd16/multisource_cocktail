@@ -19,7 +19,7 @@ from utils.dir_utils import ROOT_DIR
 #        Hyperparameters
 #=============================================
 
-epoch = 5
+epoch = 1
 lr = 0.005
 mom = 0.9
 bs = 10
@@ -42,10 +42,10 @@ from DAE.conv_fc import ResDAE as ResDAE
 from DAE.aux import white
 
 model = ResDAE()
-# try:
-#     model.load_state_dict(torch.load(ROOT_DIR + 'multisource_cocktail/DAE/DAE.pkl'))
-# except:
-#     print("model not available")
+try:
+    model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+except:
+    print("model not available")
 
 #=============================================
 #        Optimizer

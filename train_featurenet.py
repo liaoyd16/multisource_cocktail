@@ -44,7 +44,7 @@ from featureNet import featureNet as featureNet
 model = featureNet()
 try:
     if sys.argv[1]=="reuse":
-        model.load_state_dict(torch.load('/home/tk/cocktail/FeatureNet.pkl'))
+        model.load_state_dict(torch.load('/home/tk/Desktop/multisource_cocktail/FeatureNet.pkl'))
 except:
     print("reused model not available")
 print (model)
@@ -94,6 +94,8 @@ for epo in range(epoch):
 
     epoch_loss.append(np.mean(every_loss))
     every_loss = []
+
+    print("testing")
     corr, total = test(model)
     accuracy = (float)(corr) / total
     epoch_accu.append(accuracy)
