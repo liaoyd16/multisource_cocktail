@@ -1,2 +1,6 @@
-*.pkl
+ANet/*.pkl
+DAE/*.pkl
+featureNet/*.pkl
 utils/config_local.py
+__pycache__/*
+utils/__pycache__/*
