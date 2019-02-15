@@ -1,9 +1,14 @@
 ANet/*.pkl
+ANet/.DS_Store
 DAE/*.pkl
+DAE/.DS_Store
 featureNet/*.pkl
+featureNet/.DS_Store
 utils/config_local.py
 __pycache__/*
 utils/__pycache__/*
 ANet/__pycache__/*
 DAE/__pycache__/*
 featureNet/__pycache__/*
+.DS_Store
+
