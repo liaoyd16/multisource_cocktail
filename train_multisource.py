@@ -88,7 +88,7 @@ mixloader = torch.utils.data.DataLoader(dataset = mixset,
 #=============================================
 #        Model
 #=============================================
-from featureNet.featureNet import featureNet
+from featureNet import featureNet
 
 featurenet = featureNet()
 try:
@@ -98,7 +98,7 @@ except:
 
 
 
-from ANet.ANet import ANet
+from ANet import ANet
 
 A_model = ANet()
 try:
@@ -109,7 +109,7 @@ except:
 
 
 
-from DAE.conv_fc import ResDAE
+from conv_fc import ResDAE
 
 Res_model = ResDAE()
 try:
