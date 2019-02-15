@@ -50,8 +50,10 @@ except:
 criterion = nn.MSELoss()
 
 
-model.eval()
+loss_record = []
 
+
+model.eval()
 for i, data in enumerate(testloader, 0):
 
     top = model.upward(data)
@@ -62,24 +64,20 @@ for i, data in enumerate(testloader, 0):
     loss = criterion(outputs, targets)
     
     loss_record.append(loss.item())
-    loss.backward()
     
-    optimizer.step()
-    optimizer.zero_grad()
+    print ('[%d] loss: %.3f' % (i, loss.item()))
     
-    print ('[%d, %5d] loss: %.3f' % (epo, i, loss.item()))
-    
-    # if i % 5 == 0:
-    #     inn = data[0].view(256, 128).detach().numpy() * 255
-    #     cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(epo) + "_" + str(i) + "_clean.png"), inn)
+    if i % 5 == 0:
+        inn = data[0].view(256, 128).detach().numpy() * 255
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(i) + "_clean.png"), inn)
 
-    #     out = outputs[0].view(256, 128).detach().numpy() * 255
-    #     cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(epo) + "_" + str(i) + "_re.png"), out)    
-    #     plt.figure(figsize = (20, 10))
-    #     plt.plot(loss_record)
-    #     plt.xlabel('iterations')
-    #     plt.ylabel('loss')
-    #     plt.savefig(os.path.join(ROOT_DIR, 'results/autoencoder/DAE_loss.png'))
-    #     plt.close("all")
-    #     gc.collect()
+        out = outputs[0].view(256, 128).detach().numpy() * 255
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/'+ str(i) + "_re.png"), out)    
+        plt.figure(figsize = (20, 10))
+        plt.plot(loss_record)
+        plt.xlabel('iterations')
+        plt.ylabel('loss')
+        plt.savefig(os.path.join(ROOT_DIR, 'results/autoencoder/DAE_loss.png'))
+        plt.close("all")
+        gc.collect()
 
