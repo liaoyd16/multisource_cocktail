@@ -13,7 +13,7 @@ import cv2
 import random
 random.seed(7)
 
-from utils.dir_utils import ROOT_DIR
+from utils.dir_utils import ROOT_DIR, TRAIN_DIR
 
 #=============================================
 #        Hyperparameters
@@ -28,7 +28,6 @@ bs = 10
 #        Define Dataloader
 #=============================================
 from Specgram_Dataset import MSourceDataSet
-from utils.dir_utils import TRAIN_DIR
 
 trainset = MSourceDataSet(TRAIN_DIR)
 trainloader = torch.utils.data.DataLoader(dataset = trainset,
@@ -51,7 +50,6 @@ except:
 #        Optimizer
 #=============================================
 
-# import pytorch_ssim
 criterion = nn.MSELoss()
 optimizer = torch.optim.SGD(model.parameters(), lr = lr, momentum = mom)
 
