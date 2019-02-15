@@ -29,7 +29,7 @@ from DAE.resblock import ResTranspose as ResTranspose
 #        path
 #=============================================
 
-from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR
+from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR, ROOT_DIR
 from dataset_meta import *
 
 
@@ -88,32 +88,32 @@ mixloader = torch.utils.data.DataLoader(dataset = mixset,
 #=============================================
 #        Model
 #=============================================
-from featureNet.featureNet import featureNet
+from featureNet import featureNet
 
 featurenet = featureNet()
 try:
-    featurenet.load_state_dict(torch.load(root_dir + 'cocktail/combinemodel_fullconv/feat.pkl'))
+    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/feat.pkl')))
 except:
     print("F-model not available")
 
 
 
-from ANet.ANet import ANet
+from ANet import ANet
 
 A_model = ANet()
 try:
-    A_model.load_state_dict(torch.load(root_dir + 'cocktail/combinemodel_fullconv/A.pkl'))
+    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/A.pkl')))
 except:
     print("A-model not available")
 # print(A_model)
 
 
 
-from DAE.conv_fc import ResDAE
+from conv_fc import ResDAE
 
 Res_model = ResDAE()
 try:
-    Res_model.load_state_dict(torch.load(root_dir + 'cocktail/combinemodel_fullconv/res.pkl'))
+    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/res.pkl')))
 except:
     print("Res-model not available")
 # print(Res_model)
@@ -170,7 +170,7 @@ for epo in range(epoch):
 
 
         # get feature
-        feats = featurenet(feat_data)
+        feats = featurenet.feature(feat_data)
 
         # feed in feature to ANet
         a7, a6, a5, a4, a3, a2 = A_model(feats)
@@ -178,7 +178,7 @@ for epo in range(epoch):
         # Res_model
         tops = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
 
-        outputs = Res_model.downward(tops, shortcut = True)
+        outputs = Res_model.downward(tops, shortcut = True).squeeze()
 
         loss_train = criterion(outputs, target_specs)
 
@@ -199,15 +199,15 @@ for epo in range(epoch):
 
             inn = mix_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(inn, np.min(inn), 1)
-            cv2.imwrite(root_dir + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_mix.png", inn)
+            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_mix.png", inn)
 
             tarr = target_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(tarr, np.min(tarr), 1)
-            cv2.imwrite(root_dir + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_tar.png", tarr)
+            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_tar.png", tarr)
 
             outt = outputs[0].view(256, 128).detach().numpy() * 255
             np.clip(outt, np.min(outt), 1)
-            cv2.imwrite(root_dir + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_sep.png", outt)
+            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_sep.png", outt)
 
             a7.detach().numpy() * 255
 
@@ -241,7 +241,7 @@ for epo in range(epoch):
     # plt.plot(loss_record)
     # plt.xlabel('iterations')
     # plt.ylabel('loss')
-    # plt.savefig(root_dir + 'cocktail/training.png')
+    # plt.savefig(ROOT_DIR + 'cocktail/training.png')
     # gc.collect()
     # plt.close("all")
 
@@ -249,7 +249,7 @@ for epo in range(epoch):
     # plt.plot(test_record)
     # plt.xlabel('iterations')
     # plt.ylabel('loss')
-    # plt.savefig(root_dir + 'cocktail/testing.png')
+    # plt.savefig(ROOT_DIR + 'cocktail/testing.png')
     # gc.collect()
     # plt.close("all")
 
@@ -270,7 +270,7 @@ for epo in range(epoch):
 #        Save Model & Loss
 #=============================================
 
-torch.save(Res_model.state_dict(), root_dir + 'cocktail/combinemodel_fullconv/res.pkl')
-torch.save(A_model.state_dict(), root_dir + 'cocktail/combinemodel_fullconv/A.pkl')
-torch.save(featurenet.state_dict(), root_dir + 'cocktail/combinemodel_fullconv/feat.pkl')
+torch.save(Res_model.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/res.pkl')
+torch.save(A_model.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/A.pkl')
+torch.save(featurenet.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/feat.pkl')
 
