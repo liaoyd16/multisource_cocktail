@@ -76,6 +76,8 @@ def test(model):
             every_loss.append(loss.item())
 
             # features, labels
+            print(features.shape, labels.shape)
+
             feature_list.extend(features.detach().numpy().tolist())
             label_list.extend(labels.detach().numpy().tolist())
             
@@ -95,6 +97,9 @@ def test(model):
 
     label_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/labels.json"), "w")
     json.dump(label_list, label_json)
+
+    print(feature_list[0])
+    print(label_list[0])
 
     return correct, total
 
