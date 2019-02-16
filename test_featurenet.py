@@ -1,3 +1,5 @@
+import __init__
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -16,7 +18,6 @@ random.seed(0)
 #        Hyperparameters
 #=============================================
 
-epoch = 2
 bs = 10
 
 #========================================
@@ -38,6 +39,9 @@ testloader = torch.utils.data.DataLoader(dataset = featureset,
 #============================================
 from featureNet import featureNet as featureNet
 
+feature_list = []
+label_list = []
+
 def test(model):
     criterion = torch.nn.NLLLoss()
 
@@ -57,7 +61,8 @@ def test(model):
 
             inputs, labels = data
             outputs = model(inputs)
-            labels = labels.to(dtype=torch.long)
+            features = model.feature_vectors.squeeze()
+            labels = labels.to(dtype=torch.long).squeeze()
     
             loss = criterion(outputs, labels)
             
@@ -69,6 +74,10 @@ def test(model):
 
             loss_record.append(loss.item())
             every_loss.append(loss.item())
+
+            # features, labels
+            feature_list.extend(features.detach().numpy().tolist())
+            label_list.extend(labels.detach().numpy().tolist())
             
         epoch_loss.append(np.mean(every_loss))
         every_loss = []
@@ -80,10 +89,17 @@ def test(model):
         plt.savefig(os.path.join(ROOT_DIR, 'results/featurenet/test_loss.png'))
         plt.close()
 
+    import json
+    feature_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/data.json"), "w")
+    json.dump(feature_list, feature_json)
+
+    label_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/labels.json"), "w")
+    json.dump(label_list, label_json)
+
     return correct, total
 
 if __name__ == '__main__':
     model_for_test = featureNet()
-    model_for_test.load_state_dict(torch.load('/home/tk/Documents/FeatureNet.pkl'))
+    # model_for_test.load_state_dict(torch.load(os.path.join(ROOT_DIR, "multisource_cocktail/featureNet/FeatureNet.pkl")))
     print(model_for_test)
-    test(model)
+    test(model_for_test)

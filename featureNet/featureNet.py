@@ -23,7 +23,6 @@ class featureNet(nn.Module):
         x = F.relu(self.fc2(x))
 
         return x
-
         
     def forward(self, x):
         x = x.view(-1, 1 ,256, 128)
@@ -34,5 +33,6 @@ class featureNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
+        self.feature_vectors = x
         
         return F.log_softmax(x, dim = 1)
