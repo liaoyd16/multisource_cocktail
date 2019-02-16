@@ -24,7 +24,7 @@ epoch = 10
 lr = 0.001
 mom = 0.9
 bs = 10
-
+reuse = False
 
 #=================================================    
 #               Dataloader 
@@ -43,7 +43,7 @@ from featureNet import featureNet as featureNet
 
 model = featureNet()
 try:
-    if sys.argv[1]=="reuse":
+    if reuse:
         model.load_state_dict(torch.load('/home/tk/Desktop/multisource_cocktail/FeatureNet.pkl'))
 except:
     print("reused model not available")

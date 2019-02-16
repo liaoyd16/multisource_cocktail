@@ -23,6 +23,7 @@ epoch = 1
 lr = 0.005
 mom = 0.9
 bs = 10
+reuse = False
 
 #=============================================
 #        Define Dataloader
@@ -42,7 +43,8 @@ from DAE.aux import white
 
 model = ResDAE()
 try:
-    model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+    if reuse:
+        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
 except:
     print("model not available")
 
@@ -68,7 +70,7 @@ for epo in range(epoch):
     for i, data in enumerate(trainloader, 0):
 
         top = model.upward(data)
-        outputs = model.downward(top, shortcut = True)
+        outputs = model.downward(top, shortcut = False)
 
         targets = data.view(bs, 1, 256, 128)
         outputs = outputs.view(bs, 1, 256, 128)

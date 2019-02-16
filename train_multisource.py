@@ -92,9 +92,9 @@ from featureNet import featureNet
 
 featurenet = featureNet()
 try:
-    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/feat.pkl')))
-except:
-    print("F-model not available")
+    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet.pkl')))
+except Exception as e:
+    print(e, "F-model not available")
 
 
 
@@ -102,9 +102,9 @@ from ANet import ANet
 
 A_model = ANet()
 try:
-    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/A.pkl')))
-except:
-    print("A-model not available")
+    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet.pkl')))
+except Exception as e:
+    print(e, "A-model not available")
 # print(A_model)
 
 
@@ -113,9 +113,9 @@ from conv_fc import ResDAE
 
 Res_model = ResDAE()
 try:
-    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'cocktail/combinemodel_fullconv/res.pkl')))
-except:
-    print("Res-model not available")
+    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+except Exception as e:
+    print(e, "Res-model not available")
 # print(Res_model)
 
 
@@ -199,17 +199,17 @@ for epo in range(epoch):
 
             inn = mix_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(inn, np.min(inn), 1)
-            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_mix.png", inn)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(epo)  + "_mix.png"), inn)
 
             tarr = target_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(tarr, np.min(tarr), 1)
-            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_tar.png", tarr)
+            cv2.imwrite(ROOT_DIR + 'results/combinemodel/' + str(epo)  + "_tar.png", tarr)
 
             outt = outputs[0].view(256, 128).detach().numpy() * 255
             np.clip(outt, np.min(outt), 1)
-            cv2.imwrite(ROOT_DIR + 'cocktail/combinemodel_fullconv/' + str(epo)  + "_sep.png", outt)
+            cv2.imwrite(ROOT_DIR + 'results/combinemodel/' + str(epo)  + "_sep.png", outt)
 
-            a7.detach().numpy() * 255
+            # a7.detach().numpy() * 255
 
 
     # test
