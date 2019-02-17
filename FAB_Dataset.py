@@ -147,7 +147,7 @@ def gen_f_a_b(spec_block, entry_index, feat_block, random_mode=True):
         spec_block[entry_index, b_index_list]
     ])
     feats = feat_block[
-                np.random.randint(feat_block.shape[0]),
+                0, #np.random.randint(feat_block.shape[0]),
                 a_index_list
             ].reshape(1, samples_selected, 256, 128)
     return np.concatenate((feats, a_b), axis=0)
