@@ -88,7 +88,10 @@ from featureNet import featureNet
 
 featurenet = featureNet()
 try:
-    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi.pkl')))
+    if ATTEND:
+        featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi.pkl')))
+    else:
+        featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet.pkl')))
 except Exception as e:
     print(e, "F-model not available")
 
@@ -98,7 +101,10 @@ from ANet import ANet
 
 A_model = ANet()
 try:
-    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi.pkl')))
+    if ATTEND:
+        A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi.pkl')))
+    else:
+        A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet.pkl')))
 except Exception as e:
     print(e, "A-model not available")
 # print(A_model)
@@ -109,7 +115,10 @@ from conv_fc import ResDAE
 
 Res_model = ResDAE()
 try:
-    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl')))
+    if ATTEND:
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl')))
+    else:
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
 except Exception as e:
     print(e, "Res-model not available")
 # print(Res_model)
