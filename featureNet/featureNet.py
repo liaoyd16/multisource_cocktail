@@ -23,6 +23,7 @@ class featureNet(nn.Module):
         x = F.relu(self.fc2(x))
 
         return x
+
         
     def forward(self, x):
         x = x.view(-1, 1 ,256, 128)
