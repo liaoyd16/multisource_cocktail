@@ -2,13 +2,15 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from utils.dataset_meta import *
-from utils.dir_utils import TRAIN_DIR as TRAIN_DIR
+from utils.dir_utils import TRAIN_DIR, TEST_DIR
 
 import numpy as np
 import json
 import os
 
 from utils.dataset_meta import *
+
+import gc
 
 class BlockBasedDataSet(Dataset):
     '''
@@ -110,6 +112,44 @@ class trainDataSet(BlockBasedDataSet):
         f = torch.Tensor(fab[0]).view(self.bs, 256, 128)
         a = torch.Tensor(fab[1]).view(self.bs, 256, 128)
         b = torch.Tensor(fab[2]).view(self.bs, 256, 128)
+
+        return f, a, b
+
+class testDataSet(BlockBasedDataSet):
+    # 不用考虑batch了，直接一个一个读取
+    # 从block中，取出entry
+    # 从entry中，取出一系列f-a-b
+    def __init__(self, bs, feat_test_blocks, spec_test_blocks):
+        print("testDataSet: feature blocks: ", feat_test_blocks)
+        super(testDataSet, self).__init__(TEST_DIR, feat_test_blocks, spec_test_blocks, gen_fab_random_mode=False)
+        self.spec_test_blocks = spec_test_blocks
+        self.bs = bs
+
+    def __len__(self):
+        return ENTRIES_PER_JSON * len(self.spec_test_blocks) * ALL_SAMPLES_PER_ENTRY // self.bs
+
+    def __getitem__(self, index):
+
+        # block号
+        newest_json_index = index // (ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
+        entry_offset = index % (ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
+        newest_entry_index = entry_offset // ALL_SAMPLES_PER_ENTRY
+        newest_fab_index = entry_offset % ALL_SAMPLES_PER_ENTRY
+
+        if not (self.curr_json_index == newest_json_index):
+            self.curr_json_index = newest_json_index
+            f = open(clean_dir + '{}'.format(cleanfolder[newest_json_index]))
+            self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
+
+        if not (self.curr_entry_index == newest_entry_index) or not (self.curr_json_index == newest_json_index):
+            self.curr_entry_index = newest_entry_index
+            self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block, random_mode=False)
+
+        # print(self.f_a_b.shape)
+
+        f = torch.Tensor(self.f_a_b[0, newest_fab_index])
+        a = torch.Tensor(self.f_a_b[1, newest_fab_index])
+        b = torch.Tensor(self.f_a_b[2, newest_fab_index])
 
         return f, a, b
 
