@@ -188,14 +188,8 @@ class ResDAE(nn.Module):
             y = F.relu(self.uconv4(y))
         y = self.downward_net4(y)
 
-        if shortcut:
-            y = torch.cat((y, self.x3), 1)
-            y = F.relu(self.uconv3(y))
         y = self.downward_net3(y)
 
-        if shortcut:
-            y = torch.cat((y, self.x2), 1)
-            y = F.relu(self.uconv2(y))
         y = self.downward_net2(y)
 
         y = self.downward_net1(y)

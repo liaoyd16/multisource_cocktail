@@ -91,9 +91,11 @@ def test(model):
 
     import json
     feature_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/data.json"), "w")
+    print(feature_list[0])
     json.dump(feature_list, feature_json)
 
     label_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/labels.json"), "w")
+    print(label_list[0])
     json.dump(label_list, label_json)
 
     return correct, total
