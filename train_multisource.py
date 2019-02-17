@@ -79,12 +79,6 @@ mixloader = torch.utils.data.DataLoader(dataset = mixset,
     batch_size = 1,
     shuffle = False) # batch size is controlled by bs=BS, here batch_size is set to 1
 
-# testset = testDataSet()
-# testloader = torch.utils.data.DataLoader(dataset = testset,
-#     batch_size = 1,
-#     shuffle = False)
-
-
 #=============================================
 #        Model
 #=============================================
@@ -136,9 +130,6 @@ res_optimizer = torch.optim.SGD(Res_model.parameters(), lr = lr, momentum=mom)
 #=============================================
 
 loss_record = []
-test_record = []
-epoch_train = []
-epoch_test  = []
 
 #=============================================
 #        Train
@@ -199,78 +190,38 @@ for epo in range(epoch):
 
             inn = mix_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(inn, np.min(inn), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(epo)  + "_mix.png"), inn)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mix.png"), inn)
 
             tarr = target_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(tarr, np.min(tarr), 1)
-            cv2.imwrite(ROOT_DIR + 'results/combinemodel/' + str(epo)  + "_tar.png", tarr)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_tar.png"), tarr)
 
             outt = outputs[0].view(256, 128).detach().numpy() * 255
             np.clip(outt, np.min(outt), 1)
-            cv2.imwrite(ROOT_DIR + 'results/combinemodel/' + str(epo)  + "_sep.png", outt)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_sep.png"), outt)
 
             # a7.detach().numpy() * 255
 
+    plt.figure(figsize = (20, 10))
+    plt.plot(loss_record)
+    plt.xlabel('iterations')
+    plt.ylabel('loss')
+    plt.savefig(os.path.join(ROOT_DIR, 'results/combinedmodel/loss_training_epoch_{}.png'.format(epo)))
+    gc.collect()
+    plt.close("all")
 
-    # test
-    '''
-    Res_model.eval()
-    for i, data in enumerate(testloader, 0):
-        feat_data, a_specs, b_specs = data
+    train_average_loss = np.average(loss_record)
 
-        feat_data = feat_data.squeeze()
-        a_specs = a_specs.squeeze()
-        b_specs = b_specs.squeeze()
+    print ("train epoch #{} finish, loss average {}".format(epo, train_average_loss))
 
-        mix_specs = a_specs + b_specs
-        target_specs = a_specs
-
-        feat = featurenet(feat_data)
-
-        a7, a6, a5, a4, a3, a2 = A_model(feat)
-
-        top = Res_model.upward(mix_spec, a7, a6, a5, a4, a3, a2) #+ white(inputs))
-        output = Res_model.downward(top, shortcut = True)
-
-        loss_test = criterion(output, target_spec)
-
-        # test_record.append(loss_test.item())
-
-    '''
-    # plt.figure(figsize = (20, 10))
-    # plt.plot(loss_record)
-    # plt.xlabel('iterations')
-    # plt.ylabel('loss')
-    # plt.savefig(ROOT_DIR + 'cocktail/training.png')
-    # gc.collect()
-    # plt.close("all")
-
-    # plt.figure(figsize = (20, 10))
-    # plt.plot(test_record)
-    # plt.xlabel('iterations')
-    # plt.ylabel('loss')
-    # plt.savefig(ROOT_DIR + 'cocktail/testing.png')
-    # gc.collect()
-    # plt.close("all")
-
-    # train_average_loss = np.average(loss_record)
-    # test_average_loss = np.average(test_record)
-
-    # epoch_train.append(train_average_loss)
-    # epoch_test.append(test_average_loss)
-
-    # print ("train finish epoch #{}, loss average {}".format(epo, train_average_loss))
-    # print ("test finish epoch #{}, loss average {}".format(epo, test_average_loss))
-
-    # loss_record = []
-    # test_record = []
+    loss_record = []
 
 
 #=============================================
 #        Save Model & Loss
 #=============================================
 
-torch.save(Res_model.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/res.pkl')
-torch.save(A_model.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/A.pkl')
-torch.save(featurenet.state_dict(), ROOT_DIR + 'cocktail/combinemodel_fullconv/feat.pkl')
+torch.save(Res_model.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl'))
+torch.save(A_model.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi.pkl'))
+torch.save(featurenet.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi.pkl'))
 
