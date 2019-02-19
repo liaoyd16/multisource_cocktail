@@ -167,6 +167,8 @@ class ResDAE(nn.Module):
         x = self.fc1(x)
         if a7 is not None: x = x * a7.squeeze()
 
+	self.top = x
+
         return x
 
 
@@ -188,6 +190,9 @@ class ResDAE(nn.Module):
             y = F.relu(self.uconv4(y))
         y = self.downward_net4(y)
 
+        #if shortcut:
+        #    y = torch.cat((y, self.x3), 1)
+        #    y = F.relu(self.uconv3(y))
         y = self.downward_net3(y)
 
         y = self.downward_net2(y)

@@ -61,13 +61,10 @@ feat_test_block = all_json_in_test_dir[1:2]
 #        Hyperparameters
 #=============================================
 
-epoch = 10
-lr = 0.005
-mom = 0.9
 BS = 10
 BS_TEST = ALL_SAMPLES_PER_ENTRY
 
-ATTEND = True
+ATTEND = False
 
 #=============================================
 #        Define Dataloader

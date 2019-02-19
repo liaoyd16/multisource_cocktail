@@ -70,7 +70,7 @@ for epo in range(epoch):
     for i, data in enumerate(trainloader, 0):
 
         top = model.upward(data)
-        outputs = model.downward(top, shortcut = False)
+        outputs = model.downward(top, shortcut =True)
 
         targets = data.view(bs, 1, 256, 128)
         outputs = outputs.view(bs, 1, 256, 128)
