@@ -35,7 +35,6 @@ testloader = torch.utils.data.DataLoader(dataset = testset,
 #        Model
 #=============================================
 from DAE.conv_fc import ResDAE as ResDAE
-from DAE.aux import white
 
 model = ResDAE()
 try:
