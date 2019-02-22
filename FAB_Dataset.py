@@ -56,7 +56,7 @@ class trainDataSet(BlockBasedDataSet):
     # 从entry中，取出一系列f-a-b
     def __init__(self, bs, feat_train_blocks, spec_train_blocks):
         print("trainDataSet: feature blocks: ", feat_train_blocks)
-        super(trainDataSet, self).__init__(TEST_DIR, feat_train_blocks, spec_train_blocks, gen_fab_random_mode=False)
+        super(trainDataSet, self).__init__(TRAIN_DIR, feat_train_blocks, spec_train_blocks, gen_fab_random_mode=False)
         self.spec_train_blocks = spec_train_blocks
 
     def __len__(self):
