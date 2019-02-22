@@ -72,12 +72,12 @@ BS_TEST = ALL_SAMPLES_PER_ENTRY
 #        Define Dataloader
 #=============================================
 
-from FAB_Dataset import trainDataSet
+from FAB_Dataset import trainDataSet, testDataSet
 
 mixset = trainDataSet(BS, feat_train_block, spec_train_blocks)
 mixloader = torch.utils.data.DataLoader(dataset = mixset,
-    batch_size = 1,
-    shuffle = False) # batch size is controlled by bs=BS, here batch_size is set to 1
+    batch_size = BS,
+    shuffle = False)
 
 #=============================================
 #        Model
@@ -135,9 +135,10 @@ loss_record = []
 #        Train
 #=============================================
 
+from mel import mel
 def mix(a_spec, b_spec):
     spec_ = a_spec + b_spec
-    spec_ = lg(1 + spec_ / 4) / 10
+    spec_ = mel(spec_) #lg(1 + spec_ / 4) / 10
     return spec_
 
 Res_model.train()
@@ -145,12 +146,8 @@ for epo in range(epoch):
     # train
     
     for i, data in enumerate(mixloader, 0):
-        print ("training batch #{}".format(i))
 
-        # print("\ttrainDataSet: iter begin", psutil.virtual_memory().percent)
-
-        # get mix spec & label
-        
+        # get mix spec & label        
         feat_data, a_specs, b_specs = data
 
         feat_data = feat_data.squeeze()
@@ -158,12 +155,11 @@ for epo in range(epoch):
         b_specs = b_specs.squeeze()
 
         mix_specs = mix(a_specs, b_specs)
-        target_specs = a_specs
+        target_specs = mel(a_specs)
 
         feat_optimizer.zero_grad()
         anet_optimizer.zero_grad()
         res_optimizer.zero_grad()
-
 
         # get feature
         feats = featurenet.feature(feat_data)
@@ -211,7 +207,7 @@ for epo in range(epoch):
     plt.plot(loss_record)
     plt.xlabel('iterations')
     plt.ylabel('loss')
-    plt.savefig(os.path.join(ROOT_DIR, 'results/combinedmodel/loss_training_epoch_{}.png'.format(epo)))
+    plt.savefig(os.path.join(ROOT_DIR, 'results/combinemodel/loss_training_epoch_{}.png'.format(epo)))
     gc.collect()
     plt.close("all")
 

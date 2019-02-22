@@ -60,8 +60,8 @@ def test(model):
             print("testing i = {}".format(i))
 
             inputs, labels = data
-            outputs = model(inputs)
-            features = model.feature_vectors.squeeze()
+            features = model.feature(inputs)
+            outputs = model.softmax(features).squeeze()
             labels = labels.to(dtype=torch.long).squeeze()
     
             loss = criterion(outputs, labels)

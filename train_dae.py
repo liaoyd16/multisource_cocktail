@@ -65,9 +65,11 @@ loss_record = []
 #        Train
 #=============================================
 
+from mel import mel
 model.train()
 for epo in range(epoch):
     for i, data in enumerate(trainloader, 0):
+        data = mel(data)
 
         top = model.upward(data)
         outputs = model.downward(top, shortcut = False)
