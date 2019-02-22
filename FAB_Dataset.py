@@ -71,7 +71,7 @@ class trainDataSet(BlockBasedDataSet):
         if not (self.curr_json_index == newest_json_index):
             print("load new block")
             self.curr_json_index = newest_json_index
-            f = open(clean_dir + '{}'.format(cleanfolder[newest_json_index]))
+            f = open(TRAIN_DIR + '{}'.format(cleanfolder[newest_json_index]))
             self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
             self.f_a_b = gen_f_a_b(self.spec_block, self.feat_block, random_mode=False)
 
@@ -105,7 +105,7 @@ class testDataSet(BlockBasedDataSet):
         if not (self.curr_json_index == newest_json_index):
             print("load new block")
             self.curr_json_index = newest_json_index
-            f = open(clean_dir + '{}'.format(cleanfolder[newest_json_index]))
+            f = open(TEST_DIR + '{}'.format(cleanfolder[newest_json_index]))
             self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
             self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block, random_mode=False)
 

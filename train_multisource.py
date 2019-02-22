@@ -33,19 +33,20 @@ from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR, ROOT_DIR
 from dataset_meta import *
 
 
-'''
-# 22 in train dir, 4 in test dir
-# 22 = 3+19, 4 = 1+3
 
-all_json_in_train_dir = list_json_in_dir(train_dir)
-spec_train_blocks = all_json_in_train_dir[:21]
-feat_train_block = all_json_in_train_dir[21:]
+# 20 in train dir, 4 in test dir
+# 20 = 1+19, 4 = 1+3
 
-all_json_in_test_dir = list_json_in_dir(test_dir)
+all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
+spec_train_blocks = all_json_in_train_dir[:19]
+feat_train_block = all_json_in_train_dir[19:]
+
+all_json_in_test_dir = list_json_in_dir(TEST_DIR)
 spec_test_blocks = all_json_in_test_dir[:3]
 feat_test_block = all_json_in_test_dir[3:]
-'''
 
+
+'''
 # overfitting setting
 all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
 spec_train_blocks = all_json_in_train_dir[:1]
@@ -54,7 +55,7 @@ feat_train_block = all_json_in_train_dir[1:2]
 all_json_in_test_dir = list_json_in_dir(TEST_DIR)
 spec_test_blocks = all_json_in_test_dir[:1]
 feat_test_block = all_json_in_test_dir[1:2]
-
+'''
 
 
 #=============================================
@@ -221,7 +222,7 @@ for epo in range(epoch):
 #        Save Model & Loss
 #=============================================
 
-torch.save(Res_model.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl'))
-torch.save(A_model.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi.pkl'))
-torch.save(featurenet.state_dict(), os.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi.pkl'))
+torch.save(Res_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl'))
+torch.save(A_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi.pkl'))
+torch.save(featurenet.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi.pkl'))
 
