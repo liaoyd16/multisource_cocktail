@@ -134,6 +134,11 @@ loss_record = []
 #        Train
 #=============================================
 
+def mix(a_spec, b_spec):
+    spec_ = a_spec + b_spec
+    spec_ = lg(1 + spec_ / 4) / 10
+    return spec_
+
 Res_model.train()
 for epo in range(epoch):
     # train
@@ -151,7 +156,7 @@ for epo in range(epoch):
         a_specs = a_specs.squeeze()
         b_specs = b_specs.squeeze()
 
-        mix_specs = a_specs + b_specs
+        mix_specs = mix(a_specs, b_specs)
         target_specs = a_specs
 
         feat_optimizer.zero_grad()
