@@ -23,7 +23,7 @@ epoch = 1
 lr = 0.005
 mom = 0.9
 bs = 10
-reuse = False
+reuse = True
 
 #=============================================
 #        Define Dataloader
