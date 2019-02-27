@@ -68,6 +68,8 @@ every_loss = []
 epoch_loss = []
 epoch_accu = []
 
+from mel import mel
+
 model.train()
 for epo in range(epoch):
 
@@ -76,7 +78,7 @@ for epo in range(epoch):
         inputs, labels = data
         
         optimizer.zero_grad()
-        outputs = model(inputs)
+        outputs = model(mel(inputs))
         labels = labels.to(dtype=torch.long)
 
         loss = criterion(outputs, labels)

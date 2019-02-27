@@ -135,28 +135,20 @@ loss_record = []
 #        Train
 #=============================================
 
-
 from mel import mel
-def mix(a_spec, b_spec):
-    spec_ = a_spec + b_spec
-    spec_ = mel(spec_) #lg(1 + spec_ / 4) / 10
-    return spec_
 
 Res_model.train()
 for epo in range(epoch):
     # train
-    
     for i, data in enumerate(mixloader, 0):
-
         # get mix spec & label        
-        feat_data, a_specs, b_specs = data
+        feat_data, a_specs, _ = data
 
         feat_data = feat_data.squeeze()
         a_specs = a_specs.squeeze()
-        b_specs = b_specs.squeeze()
 
-        mix_specs = mix(a_specs, b_specs)
-        target_specs = mel(a_specs)
+        a_specs = mel(a_specs)
+        target_specs = a_specs
 
         feat_optimizer.zero_grad()
         anet_optimizer.zero_grad()
@@ -169,11 +161,12 @@ for epo in range(epoch):
         a7, a6, a5, a4, a3, a2 = A_model(feats)
 
         # Res_model
-        tops = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
+        tops = Res_model.upward(a_specs, a7, a6, a5, a4, a3, a2)
 
         outputs = Res_model.downward(tops, shortcut = True).squeeze()
 
         loss_train = criterion(outputs, target_specs)
+
 
         loss_train.backward()
         res_optimizer.step()
@@ -188,31 +181,28 @@ for epo in range(epoch):
 
         if i % 5 == 0:
             # print images: mix, target, attention, separated
-            mixx = mix_specs[0].view(256, 128).detach().numpy() * 255
-            np.clip(mixx, np.min(mixx), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mix.png"), mixx)
 
-            mask = mel(b_specs[0]).view(256, 128).detach().numpy() * 255
-            np.clip(mask, np.min(mask), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mask.png"), mask)
+#            inn = a_specs[0].view(256, 128).detach().numpy() * 255
+#            np.clip(inn, np.min(inn), 1)
+#            cv2.imwrite(os.path.join(ROOT_DIR, 'results/single_source/' + str(i)  + "_mix.png"), inn)
 
             tarr = target_specs[0].view(256, 128).detach().numpy() * 255
             np.clip(tarr, np.min(tarr), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_tar.png"), tarr)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/single_source/' + str(i)  + "_tar.png"), tarr)
 
             outt = outputs[0].view(256, 128).detach().numpy() * 255
             np.clip(outt, np.min(outt), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_sep.png"), outt)
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/single_source/' + str(i)  + "_sep.png"), outt)
 
             # a7.detach().numpy() * 255
 
-        plt.figure(figsize = (20, 10))
-        plt.plot(loss_record)
-        plt.xlabel('iterations')
-        plt.ylabel('loss')
-        plt.savefig(os.path.join(ROOT_DIR, 'results/combinemodel/loss_training_epoch_{}.png'.format(epo)))
-        gc.collect()
-        plt.close("all")
+    plt.figure(figsize = (20, 10))
+    plt.plot(loss_record)
+    plt.xlabel('iterations')
+    plt.ylabel('loss')
+    plt.savefig(os.path.join(ROOT_DIR, 'results/combinemodel/loss_training_epoch_{}.png'.format(epo)))
+    gc.collect()
+    plt.close("all")
 
     train_average_loss = np.average(loss_record)
 

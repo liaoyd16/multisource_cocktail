@@ -71,8 +71,9 @@ class trainDataSet(BlockBasedDataSet):
         if not (self.curr_json_index == newest_json_index):
             print("load new block")
             self.curr_json_index = newest_json_index
-            f = open(TRAIN_DIR + '{}'.format(cleanfolder[newest_json_index]))
+            f = open(TRAIN_DIR + '{}'.format(self.spec_train_blocks[newest_json_index]))
             self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
+            f.close()
             self.f_a_b = gen_f_a_b(self.spec_block, self.feat_block, random_mode=False)
 
         f = torch.Tensor(self.f_a_b[0, newest_fab_index])
@@ -105,8 +106,9 @@ class testDataSet(BlockBasedDataSet):
         if not (self.curr_json_index == newest_json_index):
             print("load new block")
             self.curr_json_index = newest_json_index
-            f = open(TEST_DIR + '{}'.format(cleanfolder[newest_json_index]))
+            f = open(TEST_DIR + '{}'.format(self.spec_test_blocks[newest_json_index]))
             self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
+            f.close()
             self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block, random_mode=False)
 
         f = torch.Tensor(self.f_a_b[0, newest_fab_index])

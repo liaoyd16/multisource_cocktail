@@ -113,12 +113,14 @@ from conv_fc import ResDAE
 Res_model = ResDAE()
 try:
     if ATTEND:
-        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi.pkl')))
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_atten_2.pkl')))
     else:
-        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_2.pkl')))
 except Exception as e:
     print(e, "Res-model not available")
 # print(Res_model)
+
+
 
 
 
@@ -133,47 +135,65 @@ criterion = nn.MSELoss()
 #=============================================
 
 test_record = []
-
+top_record = []
 # test
 
+
+from mel import mel
+def mix(a_spec, b_spec):
+    spec_ = a_spec + b_spec
+    spec_ = mel(spec_) #lg(1 + spec_ / 4) / 10
+    return spec_
+
+
 Res_model.eval()
-for i, data in enumerate(testloader, 0):
+for i, data in enumerate(mixloader, 0):
+
+    # get mix spec & label        
     feat_data, a_specs, b_specs = data
 
-    # feat_data = feat_data.squeeze()
-    # a_specs = a_specs.squeeze()
-    # b_specs = b_specs.squeeze()
-    
-    mix_specs = a_specs + b_specs
-    target_specs = a_specs
-    
-    feat = featurenet.feature(feat_data)
-    
-    if ATTEND:
-        a7, a6, a5, a4, a3, a2 = A_model(feat)
-        top = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
-    else:
-        top = Res_model.upward(mix_specs)
+    feat_data = feat_data.squeeze()
+    a_specs = a_specs.squeeze()
+    b_specs = b_specs.squeeze()
 
-    output = Res_model.downward(top, shortcut = True)
-    
-    loss = criterion(output.squeeze(), target_specs.squeeze())
-    test_record.append(loss.item())
+    mix_specs = mix(a_specs, b_specs)
+    target_specs = mel(a_specs)
+
+    if ATTEND:
+        # get feature
+        feats = featurenet.feature(feat_data)
+        # feed in feature to ANet
+        a7, a6, a5, a4, a3, a2 = A_model(feats)
+        # Res_model
+        tops = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
+
+    else:
+        tops = Res_model.upward(mix_specs)
+
+    top_record.append(tops.detach())
+    outputs = Res_model.downward(tops, shortcut = True).squeeze()
+    loss_test = criterion(outputs, target_specs)
 
     if i % 5 == 0:
         # print images: mix, target, attention, separated
+        mixx = mix_specs[0].view(256, 128).detach().numpy() * 255
+        np.clip(mixx, np.min(mixx), 1)
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_mix.png"), mixx)
 
-        inn = mix_specs[0].view(256, 128).detach().numpy() * 255
-        np.clip(inn, np.min(inn), 1)
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mix.png"), inn)
+        mask = mel(b_specs[0]).view(256, 128).detach().numpy() * 255
+        np.clip(mask, np.min(mask), 1)
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_mask.png"), mask)
 
         tarr = target_specs[0].view(256, 128).detach().numpy() * 255
         np.clip(tarr, np.min(tarr), 1)
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_tar.png"), tarr)
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_tar.png"), tarr)
 
-        outt = output[0].view(256, 128).detach().numpy() * 255
+        outt = outputs[0].view(256, 128).detach().numpy() * 255
         np.clip(outt, np.min(outt), 1)
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_sep.png"), outt)
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_sep.png"), outt)
+
+with open(os.path.join(ROOT_DIR, 'results/tops/top_atten_{}.json'.format(ATTEND))) as f:
+    json.dump(top_record,f)
 
 test_average_loss = np.average(test_record)
 print ("loss average {}".format(test_average_loss))
