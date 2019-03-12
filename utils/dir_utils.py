@@ -7,6 +7,7 @@ def list_json_in_dir(dir):
     for t in temp:
         if '.json' == t[-5:]:
             ans.append(t)
+    ans.sort()
     return ans
 
 from utils.config_local import LOCAL

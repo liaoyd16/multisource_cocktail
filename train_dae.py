@@ -20,10 +20,10 @@ from utils.dir_utils import ROOT_DIR, TRAIN_DIR
 #=============================================
 
 epoch = 1
-lr = 0.005
+lr = 0.001
 mom = 0.9
 bs = 10
-reuse = False
+reuse = True
 
 #=============================================
 #        Define Dataloader
@@ -38,15 +38,16 @@ trainloader = torch.utils.data.DataLoader(dataset = trainset,
 #=============================================
 #        Model
 #=============================================
-from DAE.conv_fc import ResDAE as ResDAE
+from DAE.conv_fc import ResDAE
 from DAE.aux import white
 
 model = ResDAE()
 try:
     if reuse:
-        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_3.pkl')))
 except:
     print("model not available")
+
 
 #=============================================
 #        Optimizer
@@ -72,7 +73,7 @@ for epo in range(epoch):
         data = mel(data)
 
         top = model.upward(data)
-        outputs = model.downward(top, shortcut = False)
+        outputs = model.downward(top, shortcut =True)
 
         targets = data.view(bs, 1, 256, 128)
         outputs = outputs.view(bs, 1, 256, 128)
@@ -105,4 +106,4 @@ for epo in range(epoch):
 #=============================================
 #        Save Model & Loss
 #=============================================
-torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl'))
+torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_3.pkl'))
