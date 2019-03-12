@@ -56,9 +56,9 @@ ATTEND = True
 #        Define Dataloader
 #=============================================
 
-from FAB_Dataset import testDataSet
+from FAB_Dataset import denoiseDataSet
 
-testset = testDataSet(BS, feat_test_blocks, spec_test_blocks)
+testset = denoiseDataSet(BS, feat_test_blocks, spec_test_blocks)
 testloader = torch.utils.data.DataLoader(dataset = testset,
     batch_size = 1,
     shuffle = False)

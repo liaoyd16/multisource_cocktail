@@ -62,8 +62,8 @@ feat_test_block = all_json_in_test_dir[1:2]
 #        Hyperparameters
 #=============================================
 
-epoch = 1
-lr = 0.002
+epoch = 2
+lr = 0.02
 mom = 0.9
 BS = 10
 BS_TEST = ALL_SAMPLES_PER_ENTRY
