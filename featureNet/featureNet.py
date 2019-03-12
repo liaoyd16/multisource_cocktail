@@ -24,15 +24,13 @@ class featureNet(nn.Module):
 
         return x
 
+    def softmax(self, x):
+        x = self.fc3(x)
+
+        return F.log_softmax(x, dim = 1)
         
     def forward(self, x):
-        x = x.view(-1, 1 ,256, 128)
-        x = F.relu(self.maxpool(self.conv1(x)))
-        x = F.relu(self.maxpool(self.conv2(x)))
-        x = self.batchnorm(x)
-        x = x.view(-1, 1024)
-        x = F.relu(self.fc1(x))
-        x = F.relu(self.fc2(x))
-        x = self.fc3(x)
+        x = self.feature(x)
+        x = self.softmax(x)
         
-        return F.log_softmax(x, dim = 1)
+        return x

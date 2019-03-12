@@ -48,12 +48,12 @@ feat_test_block = all_json_in_test_dir[3:]
 
 # overfitting setting
 all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
-spec_train_blocks = all_json_in_train_dir[:1]
-feat_train_block = all_json_in_train_dir[1:2]
+spec_train_blocks = all_json_in_train_dir[:2]
+feat_train_block = all_json_in_train_dir[2:]
 
 all_json_in_test_dir = list_json_in_dir(TEST_DIR)
-spec_test_blocks = all_json_in_test_dir[:1]
-feat_test_block = all_json_in_test_dir[1:2]
+spec_test_blocks = all_json_in_test_dir[:2]
+feat_test_block = all_json_in_test_dir[2:]
 
 
 
