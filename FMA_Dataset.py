@@ -17,6 +17,10 @@ class FMA_DataSet():
             json.load(open(os.path.join(feat_dir, feat_block), "r"))
         ).transpose(1,0,2,3)
 
+        self.feat_dir = feat_dir
+        self.mix_dir = mix_dir
+        self.a_dir = a_dir
+        
         self.mix_block = np.array(json.load(open(os.path.join(mix_dir, mix_blocks[0]), "r")))
         self.a_block = np.array(json.load(open(os.path.join(a_dir, a_blocks[0]), "r")))
 
@@ -34,8 +38,8 @@ class FMA_DataSet():
         if not new_json_index == self.curr_json_index:
             self.curr_json_index = new_json_index
 
-            self.mix_block = np.array(json.load(open(os.path.join(mix_dir, mix_blocks[self.curr_json_index]), "r")))
-            self.a_block = np.array(json.load(open(os.path.join(a_dir, a_blocks[self.curr_json_index]), "r")))
+            self.mix_block = np.array(json.load(open(os.path.join(self.mix_dir, self.mix_blocks[self.curr_json_index]), "r")))
+            self.a_block = np.array(json.load(open(os.path.join(self.a_dir, self.a_blocks[self.curr_json_index]), "r")))
 
         return torch.Tensor(self.feat_block[index, self.attendee]), \
                torch.Tensor(self.mix_block[index]), \
