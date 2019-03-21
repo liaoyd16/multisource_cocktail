@@ -148,10 +148,6 @@ for i, data in enumerate(testloader, 0):
         np.clip(mixx, np.min(mixx), 1)
         cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_mix.png"), mixx)
 
-        mask = mel(b_specs[0]).view(256, 128).detach().numpy() * 255
-        np.clip(mask, np.min(mask), 1)
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_mask.png"), mask)
-
         tarr = (target_specs[0]).view(256, 128).detach().numpy() * 255
         np.clip(tarr, np.min(tarr), 1)
         cv2.imwrite(os.path.join(ROOT_DIR, 'results/noise_test/' + str(i)  + "_tar.png"), tarr)
