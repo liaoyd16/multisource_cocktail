@@ -123,17 +123,17 @@ for i, data in enumerate(testloader, 0):
     # get mix spec & label        
     feat_data, mix_specs, a_specs = data
 
-    target_specs = mel(a_specs)
+    target_specs = a_specs
 
     if ATTEND:
         # get feature
-        feats = featurenet.feature(mel(feat_data))
+        feats = featurenet.feature(feat_data)
         # feed in feature to ANet
         a7, a6, a5, a4, a3, a2 = A_model(feats)
         # Res_model
-        tops = Res_model.upward(mel(mix_specs), a7, a6, a5, a4, a3, a2)
+        tops = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
     else:
-        tops = Res_model.upward(mel(mix_specs))
+        tops = Res_model.upward(mix_specs)
 
     top_record.append(tops.detach().numpy().tolist())
     outputs = Res_model.downward(tops, shortcut = True)
