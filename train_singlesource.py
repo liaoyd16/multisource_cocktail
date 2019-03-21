@@ -39,14 +39,7 @@ from dataset_meta import *
 
 all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
 spec_train_blocks = all_json_in_train_dir[1:]
-feat_train_block = all_json_in_train_dir[:1]
-
-'''
-# overfitting setting
-all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
-spec_train_blocks = all_json_in_train_dir[:1]
-feat_train_block = all_json_in_train_dir[1:2]
-'''
+feat_train_block = all_json_in_train_dir[0]
 
 
 #=============================================
@@ -64,9 +57,9 @@ BS_TEST = ALL_SAMPLES_PER_ENTRY
 #        Define Dataloader
 #=============================================
 
-from FAB_Dataset import trainDataSet, testDataSet
+from FAB_Dataset import FAB_DataSet
 
-mixset = trainDataSet(BS, feat_train_block, spec_train_blocks)
+mixset = FAB_DataSet(TRAIN_DIR, feat_train_block, spec_train_blocks)
 mixloader = torch.utils.data.DataLoader(dataset = mixset,
     batch_size = BS,
     shuffle = False)

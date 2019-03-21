@@ -6,7 +6,7 @@ import torch.nn.init as init
 
 import numpy as np
 
-from aux import odd, even
+from DAE.aux import odd, even
 
 ''' ResBlock '''
 

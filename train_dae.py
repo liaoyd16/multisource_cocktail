@@ -72,6 +72,8 @@ for epo in range(epoch):
     for i, data in enumerate(trainloader, 0):
         data = mel(data)
 
+        print(data.shape)
+
         top = model.upward(data)
         outputs = model.downward(top, shortcut =True)
 

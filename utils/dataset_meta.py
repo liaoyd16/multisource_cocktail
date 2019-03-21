@@ -4,8 +4,7 @@ dataset constants
 from utils.config_local import LOCAL
 
 CLASSES = 2
-ENTRIES_PER_JSON = 900
-TEST_ENTRIES_PER_JSON = 890
+ENTRIES_PER_JSON = 250
 
 DS_LIST = {'birdstudybook':0,
            'captaincook':1,

@@ -2,7 +2,6 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from utils.dataset_meta import *
-from utils.dir_utils import TRAIN_DIR, TEST_DIR
 
 import numpy as np
 import json
@@ -27,49 +26,39 @@ class FAB_DataSet():
          - self.curr_entry_index：block中的entry号
          - self.curr_fab_index：entry对应的所有(ALL_SAMPLES_PER_ENTRY) fab的编号
     '''
-    # 不用考虑batch了，直接一个一个读取
-    # 从block中，取出entry
-    # 从entry中，取出一系列f-a-b
-    def __init__(self, block_dir, feat_blocks, spec_blocks):
-        self.feat_block = []
-        for block in feat_block_list: 
-            self.feat_block.append( json.load(open(os.path.join(block_dir, block), "r")) )
-        self.feat_block = np.concatenate( np.array(self.feat_block), axis=1 ).transpose(1,0,2,3)
-
+    def __init__(self, block_dir, feat_block, spec_blocks):
+        self.feat_block = np.array( 
+            json.load(open(os.path.join(block_dir, feat_block), "r"))
+        ).transpose(1,0,2,3)
         
-        self.spec_block = np.array(
+        spec_block = np.array(
             json.load(open(os.path.join(block_dir, spec_blocks[0]), "r"))
         ).transpose(1,0,2,3)
-        self.f_a_b = gen_f_a_b(self.spec_block, self.feat_block)
-
-        print(self.f_a_b.shape)
-
+        self.f_a_b = gen_f_a_b(spec_block, self.feat_block)
 
         self.curr_json_index = 0
         self.curr_fab_index = 0
 
-        print("testDataSet: feature blocks: ", feat_test_blocks)
-        super(testDataSet, self).__init__(TEST_DIR, feat_test_blocks, spec_test_blocks, gen_fab_random_mode=False)
-        self.spec_test_blocks = spec_test_blocks
+        print("FAB-DataSet: feature blocks: ", feat_block)
+        self.block_dir = block_dir
+        self.spec_blocks = spec_blocks
 
     def __len__(self):
-        return TEST_ENTRIES_PER_JSON * len(self.spec_test_blocks) * ALL_SAMPLES_PER_ENTRY
+        return ENTRIES_PER_JSON * len(self.spec_blocks) * ALL_SAMPLES_PER_ENTRY
 
     def __getitem__(self, index):
 
         # block号
-        newest_json_index = index // (TEST_ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
-        newest_fab_index = index % (TEST_ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
-
-        #print(index, newest_json_index, newest_fab_index)
+        newest_json_index = index // (ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
+        newest_fab_index = index % (ENTRIES_PER_JSON * ALL_SAMPLES_PER_ENTRY)
 
         if not (self.curr_json_index == newest_json_index):
-            print("load new block")
+            print("loading new block")
             self.curr_json_index = newest_json_index
-            f = open(TEST_DIR + '{}'.format(self.spec_test_blocks[newest_json_index]))
-            self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
+            f = open(self.block_dir + '{}'.format(self.spec_blocks[newest_json_index]))
+            spec_block = np.array(json.load(f)).transpose(1,0,2,3)
             f.close()
-            self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block, random_mode=False)
+            self.f_a_b = gen_f_a_b(spec_block, self.feat_block)
 
         f = torch.Tensor(self.f_a_b[0, newest_fab_index])
         a = torch.Tensor(self.f_a_b[1, newest_fab_index])
@@ -78,40 +67,10 @@ class FAB_DataSet():
         return f, a, b
 
 
-class denoiseDataSet():
-    # 不用考虑batch了，直接一个一个读取
-    # 从block中，取出entry
-    # 从entry中，取出一系列f-a-b
-    def __init__(self, feat_test_blocks, spec_test_blocks):
-        print("denoiseDataSet: feature blocks: ", feat_test_blocks)
-        self.spec_test_blocks = spec_test_blocks
-
-    def __len__(self):
-        return TEST_ENTRIES_PER_JSON * len(self.spec_test_blocks) * DENOISE_SAMPLES_PER_ENTRY
-
-    def __getitem__(self, index):
-
-        # block号
-        newest_json_index = index // (TEST_ENTRIES_PER_JSON * DENOISE_SAMPLES_PER_ENTRY)
-        newest_fab_index = index % (TEST_ENTRIES_PER_JSON * DENOISE_SAMPLES_PER_ENTRY)
-
-        #print(index, newest_json_index, newest_fab_index)
-
-        if not (self.curr_json_index == newest_json_index):
-            print("load new block")
-            self.curr_json_index = newest_json_index
-            f = open(TEST_DIR + '{}'.format(self.spec_test_blocks[newest_json_index]))
-            self.spec_block = np.array(json.load(f)).transpose(1,0,2,3)
-            f.close()
-            self.f_a_b = gen_f_a_b(self.spec_block, self.curr_entry_index, self.feat_block, random_mode=False)
-
-        f = torch.Tensor(self.f_a_b[0, newest_fab_index])
-        a = torch.Tensor(self.f_a_b[1, newest_fab_index])
-        b = torch.Tensor(self.f_a_b[2, newest_fab_index])
-
-        return f, a, b
-
-
+'''
+tools:
+to gen f-a-b block of a block
+'''
 def gen_all_pairs():
     all_pairs = []
     for i in range(CLASSES):
@@ -121,16 +80,6 @@ def gen_all_pairs():
     return np.array(all_pairs)
 
 all_combinations = gen_all_pairs()
-all_combination_indices = np.arange(CLASSES * (CLASSES-1))
-
-def gen_rand_pairs(num_pairs):
-    ''' 至多C(10,2)对组合 '''
-    assert(num_pairs <= CLASSES * (CLASSES - 1))
-    ''' 长为 num_pairs 的 list ，为 [0,CLASSES-1]x[0,CLASSES-1] 中的序偶 '''
-    chosen = all_combinations[ 
-        np.array( np.random.choice(all_combination_indices, num_pairs, replace=False) ) 
-    ]
-    return chosen
 
 def gen_f_a_b(spec_block, feat_block):
     fab = []

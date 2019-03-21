@@ -199,4 +199,4 @@ class ResDAE(nn.Module):
 
         y = self.downward_net1(y)
 
-        return y
+        return y.reshape(-1, 256, 128)

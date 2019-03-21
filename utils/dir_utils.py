@@ -19,3 +19,4 @@ else:
 
 TRAIN_DIR = os.path.join(ROOT_DIR, 'cleanblock/')
 TEST_DIR  = os.path.join(ROOT_DIR, 'clean_test/')
+NOISE_DIR  = os.path.join(ROOT_DIR, 'noise_blocks/')
