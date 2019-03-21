@@ -17,6 +17,8 @@ if LOCAL:
 else:
     ROOT_DIR = '/home/tk/Desktop/multisource_cocktail/'
 
-TRAIN_DIR = os.path.join(ROOT_DIR, 'cleanblock/')
+FEAT_DIR_TEST = os.path.join(ROOT_DIR, 'feat_block_test/')
+NOISE_DIR_TEST  = os.path.join(ROOT_DIR, 'noise_blocks/')
 TEST_DIR  = os.path.join(ROOT_DIR, 'clean_test/')
-NOISE_DIR  = os.path.join(ROOT_DIR, 'noise_blocks/')
+
+TRAIN_DIR = os.path.join(ROOT_DIR, 'cleanblock/')

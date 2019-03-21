@@ -29,18 +29,8 @@ from DAE.resblock import ResTranspose as ResTranspose
 #        path
 #=============================================
 
-from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR, ROOT_DIR
+from dir_utils import *
 from dataset_meta import *
-
-
-
-# overfitting setting
-
-all_json_in_test_dir = list_json_in_dir(TEST_DIR)
-all_json_in_test_dir.sort()
-feat_test_blocks = all_json_in_test_dir[:1]
-spec_test_blocks = all_json_in_test_dir[1:2]
-
 
 
 #=============================================
@@ -48,7 +38,6 @@ spec_test_blocks = all_json_in_test_dir[1:2]
 #=============================================
 
 BS = 10
-BS_TEST = ALL_SAMPLES_PER_ENTRY
 
 ATTEND = True
 
@@ -56,11 +45,14 @@ ATTEND = True
 #        Define Dataloader
 #=============================================
 
-from FAB_Dataset import testDataSet
+from FMA_Dataset import FMA_DataSet
 
-testset = testDataSet(BS, feat_test_blocks, spec_test_blocks)
+testset = FMA_DataSet(FEAT_DIR_TEST, list_json_in_dir(FEAT_DIR_TEST)[0], 
+                      NOISE_DIR_TEST, list_json_in_dir(NOISE_DIR_TEST),
+                      TEST_DIR, list_json_in_dir(TEST_DIR),
+                      0)
 testloader = torch.utils.data.DataLoader(dataset = testset,
-    batch_size = 1,
+    batch_size = BS,
     shuffle = False)
 
 
@@ -122,10 +114,6 @@ top_record = []
 
 
 from mel import mel
-def mix(a_spec, b_spec):
-    spec_ = a_spec + b_spec
-    spec_ = mel(spec_) #lg(1 + spec_ / 4) / 10
-    return spec_
 
 
 Res_model.eval()
@@ -133,21 +121,19 @@ Res_model.eval()
 for i, data in enumerate(testloader, 0):
 
     # get mix spec & label        
-    feat_data, a_specs, b_specs = data
+    feat_data, mix_specs, a_specs = data
 
-    mix_specs = mix(a_specs, b_specs)
     target_specs = mel(a_specs)
 
     if ATTEND:
         # get feature
-        feats = featurenet.feature(feat_data)
+        feats = featurenet.feature(mel(feat_data))
         # feed in feature to ANet
         a7, a6, a5, a4, a3, a2 = A_model(feats)
         # Res_model
-        tops = Res_model.upward(mix_specs, a7, a6, a5, a4, a3, a2)
-
+        tops = Res_model.upward(mel(mix_specs), a7, a6, a5, a4, a3, a2)
     else:
-        tops = Res_model.upward(mix_specs)
+        tops = Res_model.upward(mel(mix_specs))
 
     top_record.append(tops.detach().numpy().tolist())
     outputs = Res_model.downward(tops, shortcut = True)
