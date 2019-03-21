@@ -137,7 +137,6 @@ for i, data in enumerate(testloader, 0):
 
     top_record.append(tops.detach().numpy().tolist())
     outputs = Res_model.downward(tops, shortcut = True)
-    print(criterion(outputs, torch.zeros(BS, 256, 128)))
     loss_test = criterion(outputs, target_specs)
 
     print ('[%d] loss_test: %.3f' % (i, loss_test.item()))
