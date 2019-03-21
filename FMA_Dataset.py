@@ -37,6 +37,6 @@ class FMA_DataSet():
             self.mix_block = np.array(json.load(open(os.path.join(mix_dir, mix_blocks[self.curr_json_index]), "r")))
             self.a_block = np.array(json.load(open(os.path.join(a_dir, a_blocks[self.curr_json_index]), "r")))
 
-        return torch.Tensor(self.feat_block[index, attendee]), \
+        return torch.Tensor(self.feat_block[index, self.attendee]), \
                torch.Tensor(self.mix_block[index]), \
                torch.Tensor(self.a_block[index])
