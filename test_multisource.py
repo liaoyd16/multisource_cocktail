@@ -29,8 +29,8 @@ from DAE.resblock import ResTranspose as ResTranspose
 #        path
 #=============================================
 
-from dir_utils import *
-from dataset_meta import *
+from utils.dir_utils import *
+from utils.dataset_meta import *
 
 
 #=============================================
