@@ -34,7 +34,7 @@ class FMA_DataSet():
         return ENTRIES_PER_JSON * len(self.mix_blocks)
 
     def __getitem__(self, index):
-        new_json_index = index % ENTRIES_PER_JSON
+        new_json_index = index // ENTRIES_PER_JSON
         print("index = {}, new_json_index = {}".format(index, new_json_index))
         if not new_json_index == self.curr_json_index:
             self.curr_json_index = new_json_index
