@@ -20,7 +20,7 @@ class FMA_DataSet():
         self.feat_dir = feat_dir
         self.mix_dir = mix_dir
         self.a_dir = a_dir
-        
+
         self.mix_block = np.array(json.load(open(os.path.join(mix_dir, mix_blocks[0]), "r")))
         self.a_block = np.array(json.load(open(os.path.join(a_dir, a_blocks[0]), "r")))
 
@@ -34,6 +34,7 @@ class FMA_DataSet():
         return ENTRIES_PER_JSON * len(self.mix_blocks)
 
     def __getitem__(self, index):
+        print("index = {}, curr_json_index = {}".format(index, self.curr_json_index))
         new_json_index = index % ENTRIES_PER_JSON
         if not new_json_index == self.curr_json_index:
             self.curr_json_index = new_json_index
