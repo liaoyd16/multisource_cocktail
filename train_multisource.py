@@ -4,13 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import Dataset, DataLoader
-import torch.utils.data as data
-import torch.nn.init as init
-
-import torchvision
-import torchvision.transforms as transforms
-from torch.autograd import Variable
 
 import matplotlib.pyplot as plt
 import pickle
@@ -20,54 +13,33 @@ import numpy as np
 import gc
 import cv2
 
-from DAE.aux import *
-from DAE.resblock import ResBlock as ResBlock
-from DAE.resblock import ResTranspose as ResTranspose
+import psutil
 
 
 #=============================================
 #        path
 #=============================================
 
-from dir_utils import list_json_in_dir, TRAIN_DIR, TEST_DIR, ROOT_DIR
+from dir_utils import *
 from dataset_meta import *
 
+import test_multisource
+from test_multisource import test_multisource
 
 
 # 20 in train dir, 4 in test dir
 # 20 = 1+19, 4 = 1+3
 
-all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
-spec_train_blocks = all_json_in_train_dir[:19]
-feat_train_block = all_json_in_train_dir[19:]
-
-all_json_in_test_dir = list_json_in_dir(TEST_DIR)
-spec_test_blocks = all_json_in_test_dir[:3]
-feat_test_block = all_json_in_test_dir[3:]
-
-
-'''
-# overfitting setting
-all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
-spec_train_blocks = all_json_in_train_dir[:1]
-feat_train_block = all_json_in_train_dir[1:2]
-
-all_json_in_test_dir = list_json_in_dir(TEST_DIR)
-spec_test_blocks = all_json_in_test_dir[:1]
-feat_test_block = all_json_in_test_dir[1:2]
-'''
-
-
 #=============================================
 #        Hyperparameters
 #=============================================
 
-epoch = 2
+epoch = 1
 lr = 0.02
 mom = 0.9
 BS = 10
-BS_TEST = ALL_SAMPLES_PER_ENTRY
 
+reuse = True
 
 #=============================================
 #        Define Dataloader
@@ -75,7 +47,7 @@ BS_TEST = ALL_SAMPLES_PER_ENTRY
 
 from FAB_Dataset import FAB_DataSet
 
-mixset = FAB_DataSet(TRAIN_DIR, feat_train_block, spec_train_blocks)
+mixset = FAB_DataSet(TRAIN_DIR, list_json_in_dir(TRAIN_DIR))
 mixloader = torch.utils.data.DataLoader(dataset = mixset,
     batch_size = BS,
     shuffle = False)
@@ -84,32 +56,40 @@ mixloader = torch.utils.data.DataLoader(dataset = mixset,
 #        Model
 #=============================================
 from featureNet import featureNet
-
 featurenet = featureNet()
 try:
-    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi_3.pkl')))
+    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet.pkl')))
 except Exception as e:
     print(e, "F-model not available")
 
 
-
 from ANet import ANet
-
 A_model = ANet()
-try:
-    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi_3.pkl')))
-except Exception as e:
-    print(e, "A-model not available")
+if reuse:
+    try:
+        A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi_2_trained.pkl')))
+    except Exception as e:
+        print(e, "A-model not available")
+else:
+    try:
+        A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_raw_2.pkl')))
+    except Exception as e:
+        print(e, "A-model not available")
 # print(A_model)
 
 
 from conv_fc import ResDAE
-
 Res_model = ResDAE()
-try:
-    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_3.pkl')))
-except Exception as e:
-    print(e, "Res-model not available")
+if reuse:
+    try:
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_2.pkl')))
+    except Exception as e:
+        print(e, "Res-model not available")
+else:
+    try:
+        Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_2.pkl')))
+    except Exception as e:
+        print(e, "Res-model not available")
 # print(Res_model)
 
 
@@ -119,7 +99,7 @@ except Exception as e:
 #=============================================
 
 criterion = nn.MSELoss()
-feat_optimizer = torch.optim.SGD(featurenet.parameters(), lr = lr, momentum=mom)
+#feat_optimizer = torch.optim.SGD(featurenet.parameters(), lr = lr, momentum=mom)
 anet_optimizer = torch.optim.SGD(A_model.parameters(), lr = lr, momentum=mom)
 res_optimizer = torch.optim.SGD(Res_model.parameters(), lr = lr, momentum=mom)
 
@@ -135,30 +115,31 @@ loss_record = []
 #        Train
 #=============================================
 
+#input_sum = []
+#output_sum = []
 
-from mel import mel
-def mix(a_spec, b_spec):
-    spec_ = a_spec + b_spec
-    spec_ = mel(spec_) #lg(1 + spec_ / 4) / 10
-    return spec_
+from mel import mel, norm, mix, mel_norm
+zeros = torch.zeros(BS, 256, 128)
 
-Res_model.train()
 for epo in range(epoch):
     # train
-    
     for i, data in enumerate(mixloader, 0):
+
+        Res_model.train()
 
         # get mix spec & label        
         feat_data, a_specs, b_specs = data
 
+
         feat_data = feat_data.squeeze()
-        a_specs = a_specs.squeeze()
-        b_specs = b_specs.squeeze()
+        #a_specs = norm(a_specs.squeeze())
+        #b_specs = norm(b_specs.squeeze())
 
-        mix_specs = mix(a_specs, b_specs)
-        target_specs = mel(a_specs)
 
-        feat_optimizer.zero_grad()
+        mix_specs = mel_norm(mix(a_specs, b_specs))
+        target_specs = mel_norm(a_specs)
+
+        #feat_optimizer.zero_grad()
         anet_optimizer.zero_grad()
         res_optimizer.zero_grad()
 
@@ -176,35 +157,41 @@ for epo in range(epoch):
         loss_train = criterion(outputs, target_specs)
 
         loss_train.backward()
+        
         res_optimizer.step()
         anet_optimizer.step()
-        feat_optimizer.step()
+        #feat_optimizer.step()
 
         loss_record.append(loss_train.item())
-        print ('[%d, %2d] loss_train: %.3f' % (epo, i, loss_train.item()))
+
+        print ('[%d, %5d] loss: %.3f, input: %.3f, output: %.3f'\
+         % (epo, i, loss_train.item(), criterion(target_specs, zeros).item(), criterion(outputs, zeros).item()))
         
+#        input_sum.append(np.array(criterion(target_specs, zeros).item()))
+#        output_sum.append(np.array(criterion(outputs, zeros).item()))
         # print("\ttrainDataSet: probe", psutil.virtual_memory().percent)
-        
 
         if i % 5 == 0:
             # print images: mix, target, attention, separated
-            mixx = mix_specs[0].view(256, 128).detach().numpy() * 255
-            np.clip(mixx, np.min(mixx), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mix.png"), mixx)
-
-            mask = mel(b_specs[0]).view(256, 128).detach().numpy() * 255
-            np.clip(mask, np.min(mask), 1)
-            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mask.png"), mask)
-
             tarr = target_specs[0].view(256, 128).detach().numpy() * 255
-            np.clip(tarr, np.min(tarr), 1)
             cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_tar.png"), tarr)
 
+            mask = (b_specs[0]).view(256, 128).detach().numpy() * 255
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mask.png"), mask)
+
+            mixx = mix_specs[0].view(256, 128).detach().numpy() * 255
+            cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_mix.png"), mixx)
+
             outt = outputs[0].view(256, 128).detach().numpy() * 255
-            np.clip(outt, np.min(outt), 1)
             cv2.imwrite(os.path.join(ROOT_DIR, 'results/combinemodel/' + str(i)  + "_sep.png"), outt)
 
             # a7.detach().numpy() * 255
+
+        if i % 50 == 0:
+            # test
+            loss_test = test_multisource(Res_model, A_model, featurenet)
+            print(loss_test)
+
 
         plt.figure(figsize = (20, 10))
         plt.plot(loss_record)
@@ -221,11 +208,16 @@ for epo in range(epoch):
     loss_record = []
 
 
+
 #=============================================
 #        Save Model & Loss
 #=============================================
 
-torch.save(Res_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_3.pkl'))
-torch.save(A_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi_3.pkl'))
-torch.save(featurenet.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi_3.pkl'))
+torch.save(Res_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_2.pkl'))
+torch.save(A_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_multi_2_trained.pkl'))
 
+#with open('input_sum.txt', 'w') as f:
+#    f.write(input_sum)
+
+#with open('output_sum.txt', 'w') as f:
+#    f.write(output_sum)

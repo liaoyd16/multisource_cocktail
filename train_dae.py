@@ -20,10 +20,10 @@ from utils.dir_utils import ROOT_DIR, TRAIN_DIR
 #=============================================
 
 epoch = 1
-lr = 0.001
+lr = 0.01
 mom = 0.9
 bs = 10
-reuse = True
+reuse = False
 
 #=============================================
 #        Define Dataloader
@@ -44,7 +44,7 @@ from DAE.aux import white
 model = ResDAE()
 try:
     if reuse:
-        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_3.pkl')))
+        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_2.pkl')))
 except:
     print("model not available")
 
@@ -66,13 +66,12 @@ loss_record = []
 #        Train
 #=============================================
 
-from mel import mel
+from mel import mel, norm, mel_norm
+zeros = torch.zeros(bs, 256, 128)
 model.train()
 for epo in range(epoch):
     for i, data in enumerate(trainloader, 0):
-        data = mel(data)
-
-        print(data.shape)
+        data = mel_norm(data)
 
         top = model.upward(data)
         outputs = model.downward(top, shortcut =True)
@@ -87,7 +86,8 @@ for epo in range(epoch):
         optimizer.step()
         optimizer.zero_grad()
 
-        print ('[%d, %5d] loss: %.3f' % (epo, i, loss.item()))
+        print ('[%d, %5d] loss: %.3f, input: %.3f, output: %.3f'\
+         % (epo, i, loss.item(), criterion(targets, zeros).item(), criterion(outputs, zeros).item()))
 
         if i % 5 == 0:
             inn = data[0].view(256, 128).detach().numpy() * 255
@@ -108,4 +108,4 @@ for epo in range(epoch):
 #=============================================
 #        Save Model & Loss
 #=============================================
-torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_3.pkl'))
+torch.save(model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_2.pkl'))

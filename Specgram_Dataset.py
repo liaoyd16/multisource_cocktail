@@ -28,6 +28,7 @@ class MSourceDataSet(Dataset):
 
         if not self.curr_json_index == json_index:
             self.curr_json_index = json_index
+            print("json loaded: ", os.path.join(self.clean_dir, self.clean_blocks[json_index]))
             self.spec_block = np.array(
                 json.load(open(os.path.join(self.clean_dir, self.clean_blocks[json_index]), "r"))
             ).transpose(1,0,2,3)

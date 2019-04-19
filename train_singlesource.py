@@ -20,11 +20,6 @@ import numpy as np
 import gc
 import cv2
 
-from DAE.aux import *
-from DAE.resblock import ResBlock as ResBlock
-from DAE.resblock import ResTranspose as ResTranspose
-
-
 #=============================================
 #        path
 #=============================================
@@ -37,21 +32,14 @@ from dataset_meta import *
 # 20 in train dir, 4 in test dir
 # 20 = 1+19, 4 = 1+3
 
-all_json_in_train_dir = list_json_in_dir(TRAIN_DIR)
-spec_train_blocks = all_json_in_train_dir[1:]
-feat_train_block = all_json_in_train_dir[0]
-
-
 #=============================================
 #        Hyperparameters
 #=============================================
 
 epoch = 1
-lr = 0.001
-mom = 0.5
+lr = 0.02
+mom = 0.9
 BS = 10
-BS_TEST = ALL_SAMPLES_PER_ENTRY
-
 
 #=============================================
 #        Define Dataloader
@@ -59,7 +47,7 @@ BS_TEST = ALL_SAMPLES_PER_ENTRY
 
 from FAB_Dataset import FAB_DataSet
 
-mixset = FAB_DataSet(TRAIN_DIR, feat_train_block, spec_train_blocks)
+mixset = FAB_DataSet(TRAIN_DIR, list_json_in_dir(TRAIN_DIR)[:])
 mixloader = torch.utils.data.DataLoader(dataset = mixset,
     batch_size = BS,
     shuffle = False)
@@ -67,35 +55,34 @@ mixloader = torch.utils.data.DataLoader(dataset = mixset,
 #=============================================
 #        Model
 #=============================================
+reuse = True
+
 from featureNet import featureNet
 
 featurenet = featureNet()
 try:
-    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi_3.pkl')))
+    featurenet.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet.pkl')))
 except Exception as e:
     print(e, "F-model not available")
-
 
 
 from ANet import ANet
 
 A_model = ANet()
 try:
-    A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet.pkl')))
+    if reuse:
+        A_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_raw_2.pkl')))
 except Exception as e:
     print(e, "A-model not available")
-# print(A_model)
 
 
 from conv_fc import ResDAE
 
 Res_model = ResDAE()
 try:
-    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_3.pkl')))
+    Res_model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_2.pkl')))
 except Exception as e:
     print(e, "Res-model not available")
-# print(Res_model)
-
 
 
 #=============================================
@@ -103,9 +90,11 @@ except Exception as e:
 #=============================================
 
 criterion = nn.MSELoss()
-feat_optimizer = torch.optim.SGD(featurenet.parameters(), lr = lr, momentum=mom)
+
+# feat_optimizer = torch.optim.SGD(featurenet.parameters(), lr = lr, momentum=mom)
 anet_optimizer = torch.optim.SGD(A_model.parameters(), lr = lr, momentum=mom)
 res_optimizer = torch.optim.SGD(Res_model.parameters(), lr = lr, momentum=mom)
+
 
 
 
@@ -119,7 +108,8 @@ loss_record = []
 #        Train
 #=============================================
 
-from mel import mel
+from mel import mel, norm, mel_norm
+zeros = torch.zeros(BS, 256, 128)
 
 Res_model.train()
 for epo in range(epoch):
@@ -129,12 +119,16 @@ for epo in range(epoch):
         feat_data, a_specs, _ = data
 
         feat_data = feat_data.squeeze()
-        a_specs = a_specs.squeeze()
 
-        a_specs = mel(a_specs)
-        target_specs = a_specs
+        target_specs = mel_norm(a_specs.squeeze())
 
-        feat_optimizer.zero_grad()
+#        a_specs = a_specs.squeeze()
+
+#        a_specs = norm(a_specs)
+#        target_specs = a_specs
+
+
+#       feat_optimizer.zero_grad()
         anet_optimizer.zero_grad()
         res_optimizer.zero_grad()
 
@@ -150,16 +144,15 @@ for epo in range(epoch):
         outputs = Res_model.downward(tops, shortcut = True).squeeze()
 
         loss_train = criterion(outputs, target_specs)
-
-#qweqweq
         loss_train.backward()
         res_optimizer.step()
         anet_optimizer.step()
-        feat_optimizer.step()
+#        feat_optimizer.step()
 
-        loss_record.append(loss_train.item())
-        print ('[%d, %2d] loss_train: %.3f' % (epo, i, loss_train.item()))
-        
+#       loss_record.append(loss_train.item())
+        print ('[%d, %5d] loss: %.3f, input: %.3f, output: %.3f'\
+         % (epo, i, loss_train.item(), criterion(target_specs, zeros).item(), criterion(outputs, zeros).item()))
+         
         # print("\ttrainDataSet: probe", psutil.virtual_memory().percent)
         
 
@@ -180,26 +173,26 @@ for epo in range(epoch):
 
             # a7.detach().numpy() * 255
 
-    plt.figure(figsize = (20, 10))
-    plt.plot(loss_record)
-    plt.xlabel('iterations')
-    plt.ylabel('loss')
-    plt.savefig(os.path.join(ROOT_DIR, 'results/combinemodel/loss_training_epoch_{}.png'.format(epo)))
-    gc.collect()
-    plt.close("all")
+            gc.collect()
+            plt.close("all")
 
-    train_average_loss = np.average(loss_record)
+#    plt.figure(figsize = (20, 10))
+#    plt.plot(loss_record)
+#    plt.xlabel('iterations')
+#    plt.ylabel('loss')
+#    plt.savefig(os.path.join(ROOT_DIR, 'results/combinemodel/loss_training_epoch_{}.png'.format(epo)))
 
-    print ("train epoch #{} finish, loss average {}".format(epo, train_average_loss))
+#    train_average_loss = np.average(loss_record)
 
-    loss_record = []
+#    print ("train epoch #{} finish, loss average {}".format(epo, train_average_loss))
+
+#    loss_record = []
 
 
 #=============================================
 #        Save Model & Loss
 #=============================================
 
-torch.save(Res_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_3.pkl'))
-torch.save(A_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet.pkl'))
-torch.save(featurenet.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi_3.pkl'))
-
+torch.save(Res_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_multi_2.pkl'))
+torch.save(A_model.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/ANet/ANet_raw_2.pkl'))
+#torch.save(featurenet.state_dict(), os.path.join(ROOT_DIR, 'multisource_cocktail/featureNet/FeatureNet_multi_2.pkl'))

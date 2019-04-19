@@ -21,10 +21,10 @@ from utils.dir_utils import ROOT_DIR
 #=============================================
 
 epoch = 10
-lr = 0.001
+lr = 0.002
 mom = 0.9
 bs = 10
-reuse = False
+reuse = True
 
 #=================================================    
 #               Dataloader 
@@ -44,7 +44,7 @@ from featureNet import featureNet as featureNet
 model = featureNet()
 try:
     if reuse:
-        model.load_state_dict(torch.load('/home/tk/Desktop/multisource_cocktail/FeatureNet.pkl'))
+        model.load_state_dict(torch.load(os.path.join(ROOT_DIR, "multisource_cocktail/featureNet/FeatureNet.pkl")))
 except:
     print("reused model not available")
 print (model)
@@ -68,7 +68,7 @@ every_loss = []
 epoch_loss = []
 epoch_accu = []
 
-from mel import mel
+#from mel import mel, norm
 
 model.train()
 for epo in range(epoch):
@@ -78,7 +78,7 @@ for epo in range(epoch):
         inputs, labels = data
         
         optimizer.zero_grad()
-        outputs = model(mel(inputs))
+        outputs = model(inputs)
         labels = labels.to(dtype=torch.long)
 
         loss = criterion(outputs, labels)

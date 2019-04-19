@@ -85,7 +85,7 @@ class ResDAE(nn.Module):
 
         # 16x8x128 -> 32x16x64
         # (cat -> 16x8x256 -> 16x8x128)
-        self.uconv5 = nn.Conv2d(256, 128, kernel_size=(3,3), padding=(1,1))
+        self.uconv5 = ResBlock(256, 128)
         self.downward_net5 = nn.Sequential(
             ResBlock(128, 128),
             ResBlock(128, 64),
@@ -96,7 +96,7 @@ class ResDAE(nn.Module):
 
         # 32x16x64 -> 64x32x32
         # (cat -> 32x16x128 -> 32x16x64)
-        self.uconv4 = nn.Conv2d(128, 64, kernel_size=(3,3), padding=(1,1))
+        self.uconv4 = ResBlock(128, 64)
         self.downward_net4 = nn.Sequential(
             ResBlock(64, 64),
             ResBlock(64, 32),
@@ -107,7 +107,7 @@ class ResDAE(nn.Module):
 
         # 64x32x32 -> 128x64x16
         # (cat -> 64x32x64 -> 64x32x32)
-        self.uconv3 = nn.Conv2d(64, 32, kernel_size=(3,3), padding=(1,1))
+        self.uconv3 = ResBlock(64, 32)
         self.downward_net3 = nn.Sequential(
             ResBlock(32, 32),
             ResBlock(32, 16),
@@ -118,7 +118,7 @@ class ResDAE(nn.Module):
 
         # 128x64x16 -> 256x128x8
         # (cat -> 128x64x32 -> 128x64x16)
-        self.uconv2 = nn.Conv2d(32, 16, kernel_size=(3,3), padding=(1,1))
+        self.uconv2 = ResBlock(32, 16)
         self.downward_net2 = nn.Sequential(
             ResBlock(16, 16),
             ResBlock(16, 8),
@@ -195,6 +195,9 @@ class ResDAE(nn.Module):
             y = F.relu(self.uconv3(y))
         y = self.downward_net3(y)
 
+        if shortcut:
+            y = torch.cat((y, self.x2), 1)
+            y = F.relu(self.uconv2(y))
         y = self.downward_net2(y)
 
         y = self.downward_net1(y)

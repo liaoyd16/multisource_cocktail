@@ -13,14 +13,12 @@ SAMPLES_PER_JSON = ENTRIES_PER_JSON * CLASSES
 
 
 class Spec_Label_Dataset(Dataset):
-    def __init__(self, block_dir):
+    def __init__(self, block_dir, spec_blocks):
         super(Spec_Label_Dataset, self).__init__()
         
         self.curr_json_index = -1
         self.block_dir = block_dir
-        # self.cleanfolder = os.listdir(block_dir)
-        # self.cleanfolder.sort()
-        self.cleanfolder = list_json_in_dir(block_dir)
+        self.cleanfolder = spec_blocks
         self.spec = None
         self.labels = None
 

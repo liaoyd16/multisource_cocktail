@@ -36,11 +36,7 @@ from utils.dataset_meta import *
 
 # overfitting setting
 
-all_json_in_test_dir = list_json_in_dir(TEST_DIR)
-all_json_in_test_dir.sort()
-feat_test_block = all_json_in_test_dir[0]
-spec_test_blocks = all_json_in_test_dir[1:]
-noise_test_block = "white_noise.json"
+feat_block = dir_utils.list_json_in_dir(FEAT_DIR)[0]
 
 
 #=============================================

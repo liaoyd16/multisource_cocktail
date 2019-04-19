@@ -2,13 +2,11 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 
 from utils.dataset_meta import *
+from utils.dir_utils import *
 
 import numpy as np
 import json
 import os
-
-from utils.dataset_meta import *
-
 
 class FAB_DataSet():
     '''
@@ -26,9 +24,9 @@ class FAB_DataSet():
          - self.curr_entry_index：block中的entry号
          - self.curr_fab_index：entry对应的所有(ALL_SAMPLES_PER_ENTRY) fab的编号
     '''
-    def __init__(self, block_dir, feat_block, spec_blocks):
-        self.feat_block = np.array( 
-            json.load(open(os.path.join(block_dir, feat_block), "r"))
+    def __init__(self, block_dir, spec_blocks):
+        self.feat_block = np.array(
+            json.load(open(os.path.join(FEAT_DIR, list_json_in_dir(FEAT_DIR)[0]), "r"))
         ).transpose(1,0,2,3)
         
         spec_block = np.array(
@@ -39,7 +37,6 @@ class FAB_DataSet():
         self.curr_json_index = 0
         self.curr_fab_index = 0
 
-        print("FAB-DataSet: feature blocks: ", feat_block)
         self.block_dir = block_dir
         self.spec_blocks = spec_blocks
 

@@ -28,8 +28,9 @@ from Spec_Label_Dataset import Spec_Label_Dataset as Spec_Label_Dataset
 #=================================================    
 #           Dataloader 
 #=================================================
-from utils.dir_utils import TEST_DIR, TRAIN_DIR, ROOT_DIR
-featureset = Spec_Label_Dataset(TRAIN_DIR)
+from utils.dir_utils import *
+#featureset = Spec_Label_Dataset(TRAIN_DIR, list_json_in_dir(TRAIN_DIR)[:2])
+featureset = Spec_Label_Dataset(TEST_DIR, ['people_to_people.json'])
 testloader = torch.utils.data.DataLoader(dataset = featureset,
                                                 batch_size = bs,
                                                 shuffle = False)
@@ -41,6 +42,8 @@ from featureNet import featureNet as featureNet
 
 feature_list = []
 label_list = []
+
+#from mel import norm
 
 def test(model):
     criterion = torch.nn.NLLLoss()
@@ -60,8 +63,7 @@ def test(model):
             print("testing i = {}".format(i))
 
             inputs, labels = data
-            features = model.feature(inputs)
-            outputs = model.softmax(features).squeeze()
+            outputs = model.forward(inputs).squeeze()
             labels = labels.to(dtype=torch.long).squeeze()
     
             loss = criterion(outputs, labels)
@@ -70,15 +72,16 @@ def test(model):
             
             total += labels.size(0)
             
+            print(predicted, labels)
             correct += (predicted == labels).sum()
 
             loss_record.append(loss.item())
             every_loss.append(loss.item())
 
             # features, labels
-            print(features.shape, labels.shape)
+            #print(features.shape, labels.shape)
 
-            feature_list.extend(features.detach().numpy().tolist())
+            #feature_list.extend(features.detach().numpy().tolist())
             label_list.extend(labels.detach().numpy().tolist())
             
         epoch_loss.append(np.mean(every_loss))
@@ -91,22 +94,23 @@ def test(model):
         plt.savefig(os.path.join(ROOT_DIR, 'results/featurenet/test_loss.png'))
         plt.close()
 
-    import json
-    feature_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/data.json"), "w")
-    print(feature_list[0])
-    json.dump(feature_list, feature_json)
+    #import json
+    #feature_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/data.json"), "w")
+    #print(feature_list[0])
+    #json.dump(feature_list, feature_json)
 
-    label_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/labels.json"), "w")
-    print(label_list[0])
-    json.dump(label_list, label_json)
+    #label_json = open(os.path.join(ROOT_DIR, "results/featurenet/features/labels.json"), "w")
+    #print(label_list[0])
+    #json.dump(label_list, label_json)
 
-    print(feature_list[0])
-    print(label_list[0])
+    #print(feature_list[0])
+    #print(label_list[0])
 
     return correct, total
 
 if __name__ == '__main__':
     model_for_test = featureNet()
-    # model_for_test.load_state_dict(torch.load(os.path.join(ROOT_DIR, "multisource_cocktail/featureNet/FeatureNet.pkl")))
+    model_for_test.load_state_dict(torch.load(os.path.join(ROOT_DIR, "multisource_cocktail/featureNet/FeatureNet.pkl")))
     print(model_for_test)
-    test(model_for_test)
+    correct, total = test(model_for_test)
+    print("accuracy: ", correct,  total)

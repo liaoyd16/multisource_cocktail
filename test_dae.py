@@ -38,7 +38,7 @@ from DAE.conv_fc import ResDAE as ResDAE
 
 model = ResDAE()
 try:
-    model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE.pkl')))
+    model.load_state_dict(torch.load(os.path.join(ROOT_DIR, 'multisource_cocktail/DAE/DAE_raw_2.pkl')))
 except:
     print("model not available")
 
@@ -51,13 +51,16 @@ criterion = nn.MSELoss()
 
 loss_record = []
 
+from mel import mel_norm
 
 model.eval()
 for i, data in enumerate(testloader, 0):
 
+    data = mel_norm(data)
+
     top = model.upward(data)
     outputs = model.downward(top, shortcut = True)
-    
+
     targets = data.view(bs, 1, 256, 128)
     outputs = outputs.view(bs, 1, 256, 128)
     loss = criterion(outputs, targets)
@@ -66,17 +69,18 @@ for i, data in enumerate(testloader, 0):
     
     print ('[%d] loss: %.3f' % (i, loss.item()))
     
-    if i % 5 == 0:
+    if i % 1 == 0:
         inn = data[0].view(256, 128).detach().numpy() * 255
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/' + str(i) + "_clean.png"), inn)
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/test_dae/' + str(i) + "_clean.png"), inn)
 
         out = outputs[0].view(256, 128).detach().numpy() * 255
-        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/'+ str(i) + "_re.png"), out)    
+        cv2.imwrite(os.path.join(ROOT_DIR, 'results/autoencoder/test_dae/'+ str(i) + "_re.png"), out)    
+        
         plt.figure(figsize = (20, 10))
         plt.plot(loss_record)
         plt.xlabel('iterations')
         plt.ylabel('loss')
-        plt.savefig(os.path.join(ROOT_DIR, 'results/autoencoder/DAE_loss.png'))
+        plt.savefig(os.path.join(ROOT_DIR, 'results/autoencoder/test_dae/DAE_loss.png'))
         plt.close("all")
         gc.collect()
 

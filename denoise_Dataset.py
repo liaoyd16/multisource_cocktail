@@ -21,7 +21,9 @@ class denoiseDataSet():
             json.load(open(os.path.join(block_dir, feat_block), "r"))
         ).transpose(1,0,2,3)
 
-        self.noise_block = np.array( json.load(open(os.path.join(NOISE_DIR, noise_block), "r")))
+        self.noise_block = np.array( 
+            json.load(open(os.path.join(NOISE_DIR_TEST, noise_block), "r"))
+        )
         
         spec_block = np.array(
             json.load(open(os.path.join(block_dir, spec_blocks[0]), "r"))
