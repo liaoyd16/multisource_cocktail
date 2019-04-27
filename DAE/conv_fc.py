@@ -171,6 +171,31 @@ class ResDAE(nn.Module):
 
         return x
 
+    def do_strf(self, x, a7=None, a6=None, a5=None, a4=None, a3=None, a2=None):
+        self.xs = []
+
+        x = x.view(-1, 1, 256, 128)
+
+        x = self.upward_net1(x)
+        x = self.upward_net2(x)
+        if a2 is not None: x = x * a2
+        self.xs.append(x.detach().numpy())
+        x = self.upward_net3(x)
+        if a3 is not None: x = x * a3
+        self.xs.append(x.detach().numpy())
+        x = self.upward_net4(x)
+        if a4 is not None: x = x * a4
+        self.xs.append(x.detach().numpy())
+        x = self.upward_net5(x)
+        if a5 is not None: x = x * a5
+        self.xs.append(x.detach().numpy())
+        x = self.upward_net6(x)
+        if a6 is not None: x = x * a6
+        self.xs.append(x.detach().numpy())
+        x = self.fc1(x.view(-1, 4096))
+        if a7 is not None: x = x * a7.squeeze()
+        self.xs.append(x.detach().numpy())
+
 
     def downward(self, y, shortcut= True):
         
